@@ -1,7 +1,7 @@
-from fastapi import models
+from pydantic import BaseModel
 
-class User(models.BaseModel):
-    id: int
+
+class UserCreate(BaseModel):
     nome: str
     email: str
     email_verificado: bool
@@ -10,3 +10,7 @@ class User(models.BaseModel):
     status: str
     ultimo_login: str
     role: str
+
+
+class User(UserCreate):
+    id: int
