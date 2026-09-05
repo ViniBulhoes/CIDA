@@ -1,7 +1,6 @@
 from fastapi import models
 
-class Elder(models.BaseModel):
-    id: int
+class ElderCreate(models.BaseModel):
     userId: int
     nome: str
     telefone: str
@@ -13,3 +12,6 @@ class Elder(models.BaseModel):
     medicamentos: str
     historico_acidentes: str
     observacoes: str
+
+class Elder(ElderCreate):
+    id: int

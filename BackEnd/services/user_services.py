@@ -1,4 +1,4 @@
-import BackEnd.models.user_models as User
+import BackEnd.models.user_models as user_models
 
 def home ():
     return {"message": "API em funcionamento!"} 
@@ -9,10 +9,10 @@ contador_id = 1
 def listar_usuarios():
     return usuarios
 
-def criar_usuario(usuario: User.UserCreate):
+def criar_usuario(usuario: user_models.UserCreate):
     global contador_id
 
-    novo_usuario = User.User(
+    novo_usuario = user_models.User(
         id = contador_id,
         **usuario.model_dump()
     )
@@ -27,7 +27,7 @@ def get_usuario_por_id(usuario_id: int):
             return usuario
     return None
 
-def atualizar_usuario(usuario_id: int, usuario_atualizado: User.User):
+def atualizar_usuario(usuario_id: int, usuario_atualizado: user_models.User):
     for index, usuario in enumerate(usuarios):
         if usuario.id == usuario_id:
             usuario_atualizado.id = usuario_id
