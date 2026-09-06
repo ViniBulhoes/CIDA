@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./BackEnd
+      dockerfile: Dockerfile
+    container_name: cida_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Sincroniza seu código local com o contêiner em tempo real (Hot Reload)
+      - ./BackEnd:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  frontend:
+    build:
+      context: ./FrontEnd
+      dockerfile: Dockerfile
+    container_name: cida_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./FrontEnd:/app
+      - /app/node_modules
+    depends_on:
+      - backend

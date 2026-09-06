@@ -1,18 +1,19 @@
-# Python / Backend
-venv/
-__pycache__/
-*.pyc
-
-# Node / Frontend
-node_modules/
-dist/
-
-# Variáveis de ambiente
+# Variáveis de ambiente e dados sensíveis
 .env
-.env.local
+.env.*
+!.env.example
 
-# Editor / SO
-.vscode/
-.idea/
+# Sistemas Operacionais e Editores
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs gerais
+*.log
+logs/
