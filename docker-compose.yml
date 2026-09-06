@@ -22,4 +22,4 @@ services:
       - ./FrontEnd:/app
       - /app/node_modules
     depends_on:
-      - backend`
+      - backend
