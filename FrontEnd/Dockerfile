@@ -1,14 +1,12 @@
-FROM node:20-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
-
-# Instala as dependências ignorando travas de plataforma
-RUN npm install --legacy-peer-deps
+RUN npm install
 
 COPY . .
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["npm", "run", "dev", "--", "--host"]
