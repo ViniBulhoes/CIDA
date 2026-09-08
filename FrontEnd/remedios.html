@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CIDA - Buscar Remédios</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React e ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-900 m-0 p-0 font-sans">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect } = React;
+
+    function RemediosScreen() {
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }, []);
+
+      return (
+        <div className="flex justify-center bg-slate-900 min-h-screen p-0 sm:p-4">
+          {/* Container Mobile */}
+          <div className="w-full max-w-[420px] bg-slate-100 min-h-screen flex flex-col justify-between relative shadow-2xl overflow-hidden sm:rounded-[44px] border border-slate-300">
+            
+            {/* Área Rolável de Conteúdo */}
+            <div className="flex-1 overflow-y-auto">
+              
+              {/* Topo Azul Marinho Curvado */}
+              <div className="bg-[#15284B] pt-8 px-6 pb-8 rounded-b-[36px] shadow-md relative">
+                {/* Header: Logo e Foto */}
+                <header className="flex justify-between items-center mb-5">
+                  <div className="flex items-center gap-2">
+                    <i data-lucide="heart" className="w-6 h-6 text-emerald-400 stroke-[2.5]"></i>
+                    <span className="text-2xl font-black tracking-wider text-white">CIDA</span>
+                  </div>
+                  
+                  {/* Foto de Perfil Redirecionando para perfil.html */}
+                  <button 
+                    type="button"
+                    onClick={() => window.location.href = 'perfil.html'}
+                    title="Ir para o Perfil"
+                    aria-label="Ir para o Perfil"
+                    className="rounded-full transition-transform active:scale-90 hover:opacity-90 cursor-pointer focus:outline-none"
+                  >
+                    <img 
+                      src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80" 
+                      alt="Foto de perfil de Seu João" 
+                      className="w-11 h-11 rounded-full object-cover border-2 border-white/80 shadow"
+                    />
+                  </button>
+                </header>
+
+                {/* Título da Tela */}
+                <div className="mb-4">
+                  <h1 className="text-3xl font-extrabold text-white tracking-tight">
+                    Buscar Remédios
+                  </h1>
+                </div>
+
+                {/* Barra de Pesquisa com Placeholder */}
+                <div className="relative flex items-center">
+                  <span className="absolute left-4 text-slate-400">
+                    <i data-lucide="search" className="w-5 h-5"></i>
+                  </span>
+                  <input 
+                    type="text"
+                    placeholder="Digite o nome do remédio..."
+                    className="w-full bg-white text-slate-900 font-semibold pl-12 pr-12 py-3.5 rounded-2xl shadow-inner focus:outline-none text-base border-none placeholder:text-slate-400 placeholder:font-normal"
+                  />
+                  <button 
+                    type="button" 
+                    className="absolute right-3 p-1.5 text-red-500 hover:text-red-600 transition-colors cursor-pointer"
+                  >
+                    <i data-lucide="mic" className="w-5 h-5"></i>
+                  </button>
+                </div>
+              </div>
+
+              {/* Listagem de Resultados e Farmácias */}
+              <div className="px-5 pt-5 pb-6">
+                
+                {/* Barra de Contexto e Ordenação */}
+                <div className="flex justify-between items-center mb-4 px-1">
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">
+                      Medicamentos disponíveis
+                    </span>
+                    <span className="text-[11px] font-semibold text-slate-500">
+                      São Paulo - SP
+                    </span>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="flex items-center gap-1 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm cursor-pointer"
+                  >
+                    Preço <i data-lucide="arrow-down" className="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+
+                {/* Lista de Drogarias */}
+                <div className="space-y-4">
+                  
+                  {/* Card 1: Droga Raia */}
+                  <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+                    <div className="flex items-start justify-between mb-3.5">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src="https://images.unsplash.com/photo-1586015555751-63bb77f4322a?w=100&auto=format&fit=crop&q=80" 
+                          alt="Droga Raia Fachada" 
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200"
+                        />
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                            Droga Raia
+                          </h3>
+                          <span className="text-base font-extrabold text-emerald-600 block mt-0.5">
+                            R$ 12,90
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <span className="bg-emerald-100 text-emerald-700 font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        Menor Preço
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                      <button 
+                        type="button" 
+                        className="w-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <i data-lucide="map-pin" className="w-4 h-4 text-slate-700"></i>
+                        Ver Mapa
+                      </button>
+                      <button 
+                        type="button" 
+                        className="w-full bg-[#15284B] hover:bg-[#1f3a6d] text-white font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                      >
+                        <i data-lucide="phone" className="w-4 h-4"></i>
+                        Ligar
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card 2: Drogarias Pacheco */}
+                  <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+                    <div className="flex items-start justify-between mb-3.5">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src="https://images.unsplash.com/photo-1576602976047-174e57a47881?w=100&auto=format&fit=crop&q=80" 
+                          alt="Drogarias Pacheco Fachada" 
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200"
+                        />
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                            Drogarias Pacheco
+                          </h3>
+                          <span className="text-base font-extrabold text-emerald-600 block mt-0.5">
+                            R$ 14,50
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <span className="bg-blue-100 text-blue-700 font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        Mais Próxima
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                      <button 
+                        type="button" 
+                        className="w-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <i data-lucide="map-pin" className="w-4 h-4 text-slate-700"></i>
+                        Ver Mapa
+                      </button>
+                      <button 
+                        type="button" 
+                        className="w-full bg-[#15284B] hover:bg-[#1f3a6d] text-white font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                      >
+                        <i data-lucide="phone" className="w-4 h-4"></i>
+                        Ligar
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card 3: Pague Menos */}
+                  <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+                    <div className="flex items-start justify-between mb-3.5">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src="https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=100&auto=format&fit=crop&q=80" 
+                          alt="Pague Menos Fachada" 
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200"
+                        />
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                            Pague Menos
+                          </h3>
+                          <span className="text-base font-extrabold text-emerald-600 block mt-0.5">
+                            R$ 15,10
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <span className="bg-purple-100 text-purple-700 font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        Popular
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                      <button 
+                        type="button" 
+                        className="w-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <i data-lucide="map-pin" className="w-4 h-4 text-slate-700"></i>
+                        Ver Mapa
+                      </button>
+                      <button 
+                        type="button" 
+                        className="w-full bg-[#15284B] hover:bg-[#1f3a6d] text-white font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                      >
+                        <i data-lucide="phone" className="w-4 h-4"></i>
+                        Ligar
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+
+            {/* Footer / Barra Inferior (Aba Remédios Ativa) */}
+            <nav className="bg-white border-t-2 border-slate-200 py-3 px-3 flex justify-around items-center shadow-[0_-4px_16px_rgba(0,0,0,0.06)] relative z-10">
+              
+              {/* Home */}
+              <button type="button" onClick={() => window.location.href = 'home.html'} className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-500 hover:text-slate-800 font-semibold transition-all cursor-pointer">
+                <i data-lucide="home" className="w-6 h-6 stroke-[2]"></i>
+                <span className="text-xs mt-1">Home</span>
+              </button>
+
+              {/* Remédios Ativo */}
+              <button type="button" onClick={() => window.location.href = 'remedios.html'} className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-900 font-bold transition-all cursor-pointer">
+                <i data-lucide="pill" className="w-6 h-6 rotate-45 stroke-[2.5]"></i>
+                <span className="text-xs mt-1">Remédios</span>
+              </button>
+
+              {/* Rotina */}
+              <button type="button" onClick={() => window.location.href = 'rotina.html'} className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-500 hover:text-slate-800 font-semibold transition-all cursor-pointer">
+                <i data-lucide="calendar" className="w-6 h-6 stroke-[2]"></i>
+                <span className="text-xs mt-1">Rotina</span>
+              </button>
+
+              {/* Perfil */}
+              <button type="button" onClick={() => window.location.href = 'perfil.html'} className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-500 hover:text-slate-800 font-semibold transition-all cursor-pointer">
+                <i data-lucide="user" className="w-6 h-6 stroke-[2]"></i>
+                <span className="text-xs mt-1">Perfil</span>
+              </button>
+            </nav>
+
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<RemediosScreen />);
+  </script>
+</body>
+</html>
