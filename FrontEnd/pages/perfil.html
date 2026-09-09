@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CIDA - Perfil e Cuidador</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React e ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-900 m-0 p-0 font-sans">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect } = React;
+
+    function PerfilScreen() {
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }, []);
+
+      return (
+        <div className="flex justify-center bg-slate-900 min-h-screen p-0 sm:p-4">
+          {/* Container Mobile */}
+          <div className="w-full max-w-[420px] bg-slate-100 min-h-screen flex flex-col justify-between relative shadow-2xl overflow-hidden sm:rounded-[44px] border border-slate-300">
+            
+            {/* Área Rolável de Conteúdo */}
+            <div className="flex-1 overflow-y-auto">
+              
+              {/* Topo Azul Marinho Curvado */}
+              <div className="bg-[#15284B] pt-8 px-6 pb-8 rounded-b-[36px] shadow-md relative">
+                {/* Header: Logo CIDA e Botão Configurações */}
+                <header className="flex justify-between items-center mb-5">
+                  <div className="flex items-center gap-2">
+                    <i data-lucide="heart" className="w-6 h-6 text-emerald-400 stroke-[2.5]"></i>
+                    <span className="text-2xl font-black tracking-wider text-white">CIDA</span>
+                  </div>
+                  
+                  {/* Botão Configurações Acessível (48x48px) */}
+                  <button 
+                    type="button" 
+                    onClick={() => alert("Abrir Configurações do Aplicativo")}
+                    aria-label="Configurações"
+                    className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white transition-all cursor-pointer border border-white/15 shadow-sm"
+                  >
+                    <i data-lucide="settings" className="w-6 h-6 stroke-[2.2]"></i>
+                  </button>
+                </header>
+
+                {/* Título da Tela */}
+                <div>
+                  <h1 className="text-3xl font-extrabold text-white tracking-tight">
+                    Perfil e Cuidador
+                  </h1>
+                </div>
+              </div>
+
+              {/* Corpo da Tela */}
+              <div className="px-5 pt-5 pb-6 space-y-6">
+                
+                {/* Card Principal: Dados do Idoso */}
+                <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center gap-4">
+                  <img 
+                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=140&auto=format&fit=crop&q=80" 
+                    alt="João Silva" 
+                    className="w-14 h-14 rounded-full object-cover border-2 border-emerald-500 shadow-sm"
+                  />
+                  <div>
+                    <h2 className="text-lg font-extrabold text-slate-900 leading-tight">
+                      João Silva, 74
+                    </h2>
+                    <span className="text-xs font-semibold text-slate-500 mt-0.5 block">
+                      Plano: <span className="text-emerald-700 font-bold">CIDA Premium</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Seção Cuidador Responsável */}
+                <section>
+                  <h3 className="text-base font-bold text-slate-900 mb-3 px-1">
+                    Cuidador Responsável
+                  </h3>
+                  
+                  <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div className="flex items-center gap-3.5">
+                      <img 
+                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80" 
+                        alt="Enfermeira Ana Beatriz" 
+                        className="w-12 h-12 rounded-full object-cover border border-slate-200"
+                      />
+                      <div>
+                        <h4 className="text-sm font-extrabold text-slate-900 leading-tight">
+                          Ana Beatriz (Enfermeira)
+                        </h4>
+                        <span className="text-xs font-medium text-slate-500 block mt-0.5">
+                          Última visita: <strong className="text-slate-700 font-semibold">Hoje às 08:30</strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    <a 
+                      href="tel:11999999999" 
+                      className="w-10 h-10 rounded-xl bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 transition-colors border border-emerald-100 shrink-0"
+                    >
+                      <i data-lucide="phone" className="w-5 h-5 stroke-[2.2]"></i>
+                    </a>
+                  </div>
+                </section>
+
+                {/* Seção Contatos de Emergência */}
+                <section>
+                  <h3 className="text-base font-bold text-slate-900 mb-3 px-1">
+                    Contatos de Emergência
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {/* Contato Familiar */}
+                    <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-extrabold text-slate-900 leading-tight">
+                          Marcos Silva (Filho)
+                        </h4>
+                        <span className="text-xs font-semibold text-slate-500 block mt-0.5">
+                          (11) 98765-4321
+                        </span>
+                      </div>
+
+                      <a 
+                        href="tel:11987654321" 
+                        className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors border border-slate-200 shrink-0"
+                      >
+                        <i data-lucide="phone" className="w-5 h-5 stroke-[2.2]"></i>
+                      </a>
+                    </div>
+
+                    {/* Contato Serviço Público (SAMU) */}
+                    <div className="bg-white rounded-2xl p-4 border-2 border-red-200 shadow-sm flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-extrabold text-slate-900 leading-tight flex items-center gap-1.5">
+                          Ambulância SAMU
+                        </h4>
+                        <span className="text-xs font-bold text-red-600 block mt-0.5">
+                          Ligar 192
+                        </span>
+                      </div>
+
+                      <a 
+                        href="tel:192" 
+                        className="w-10 h-10 rounded-xl bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-600 transition-colors border border-red-200 shrink-0"
+                      >
+                        <i data-lucide="phone" className="w-5 h-5 stroke-[2.2]"></i>
+                      </a>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Botão Sair da Conta */}
+                <section className="pt-2">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if (confirm("Deseja realmente sair da sua conta?")) {
+                        window.location.href = '../index.html';
+                      }
+                    }}
+                    className="w-full bg-white hover:bg-red-50 active:scale-[0.98] transition-all text-red-600 font-bold text-sm py-3.5 px-4 rounded-2xl border-2 border-red-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <i data-lucide="log-out" className="w-4 h-4 stroke-[2.5]"></i>
+                    <span>Sair da Conta</span>
+                  </button>
+                </section>
+
+              </div>
+            </div>
+
+            {/* Footer / Barra Inferior (Aba Perfil Ativa) */}
+            <nav className="bg-white border-t-2 border-slate-200 py-3 px-3 flex justify-around items-center shadow-[0_-4px_16px_rgba(0,0,0,0.06)] relative z-10">
+              
+              {/* Home */}
+              <button type="button" onClick={() => window.location.href = 'home.html'} className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-500 hover:text-slate-800 font-semibold transition-all cursor-pointer">
+                <i data-lucide="home" className="w-6 h-6 stroke-[2]"></i>
+                <span className="text-xs mt-1">Home</span>
+              </button>
+
+              {/* Remédios */}
+              <button type="button" onClick={() => window.location.href = 'remedios.html'} className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-500 hover:text-slate-800 font-semibold transition-all cursor-pointer">
+                <i data-lucide="pill" className="w-6 h-6 rotate-45 stroke-[2]"></i>
+                <span className="text-xs mt-1">Remédios</span>
+              </button>
+
+              {/* Rotina */}
+              <button type="button" onClick={() => window.location.href = 'rotina.html'} className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-500 hover:text-slate-800 font-semibold transition-all cursor-pointer">
+                <i data-lucide="calendar" className="w-6 h-6 stroke-[2]"></i>
+                <span className="text-xs mt-1">Rotina</span>
+              </button>
+
+              {/* Perfil Ativo */}
+              <button type="button" onClick={() => window.location.href = 'perfil.html'} className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-900 font-bold transition-all cursor-pointer">
+                <i data-lucide="user" className="w-6 h-6 stroke-[2.5]"></i>
+                <span className="text-xs mt-1">Perfil</span>
+              </button>
+            </nav>
+
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<PerfilScreen />);
+  </script>
+</body>
+</html>
