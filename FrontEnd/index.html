@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CIDA - Home</title>
+  <title>CIDA - Entrar</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,20 +12,23 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   
-  <!-- Babel Standalone para interpretar JSX no navegador -->
+  <!-- Babel Standalone -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Lucide Icons via CDN -->
+  <!-- Lucide Icons via CDN para os ícones estáticos -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-900 m-0 p-0">
+<body class="bg-slate-900 m-0 p-0 font-sans">
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useEffect } = React;
+    const { useState, useEffect } = React;
 
-    function App() {
-      // Ativa os ícones da biblioteca Lucide após a montagem do React
+    function LoginScreen() {
+      const [showPassword, setShowPassword] = useState(false);
+      const [password, setPassword] = useState("123456");
+
+      // Roda uma única vez na inicialização para os ícones estáticos
       useEffect(() => {
         if (window.lucide) {
           window.lucide.createIcons();
@@ -33,158 +36,143 @@
       }, []);
 
       return (
-        <div className="flex justify-center bg-slate-900 min-h-screen p-0 sm:p-4 font-sans">
-          {/* Moldura Mobile */}
-          <div className="w-full max-w-[420px] bg-slate-50 min-h-screen flex flex-col justify-between relative shadow-2xl overflow-hidden sm:rounded-[40px] border border-slate-200">
+        <div className="flex justify-center items-center bg-slate-900 min-h-screen p-0 sm:p-4">
+          {/* Container Mobile Travado na Proporção */}
+          <div className="w-full max-w-[420px] bg-slate-100 h-screen sm:h-[844px] flex flex-col justify-between relative shadow-2xl overflow-hidden sm:rounded-[44px] border border-slate-300">
             
-            {/* Conteúdo Principal */}
-            <div className="p-6">
-              
-              {/* Header Superior: Logo e Perfil */}
-              <header className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-2">
-                  <i data-lucide="heart" className="w-7 h-7 text-emerald-600 fill-emerald-600 stroke-emerald-600"></i>
-                  <span className="text-2xl font-black tracking-wider text-slate-800">CIDA</span>
-                </div>
-                
-                <img 
-                  src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80" 
-                  alt="Foto de perfil de Seu João" 
-                  className="w-11 h-11 rounded-full object-cover border-2 border-emerald-600 shadow-sm"
-                />
-              </header>
-
-              {/* Saudação */}
-              <section className="mb-5">
-                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  Olá, Seu João!
-                </h1>
-                <p className="text-slate-500 font-medium text-sm mt-0.5">
-                  Cuidado para idosos
-                </p>
-              </section>
-
-              {/* Botão SOS Emergência */}
-              <button 
-                type="button"
-                onClick={() => alert("SOS Disparado!")}
-                className="w-full bg-[#E52E3D] hover:bg-red-700 active:scale-[0.98] transition-all duration-150 text-white rounded-2xl py-4 px-6 flex items-center justify-center gap-3 shadow-lg shadow-red-500/30 mb-6 cursor-pointer"
-              >
-                <i data-lucide="ambulance" className="w-7 h-7 stroke-[2.5]"></i>
-                <span className="text-xl font-black tracking-wider uppercase">
-                  SOS EMERGÊNCIA
-                </span>
-              </button>
-
-              {/* Card Próxima Dose */}
-              <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
-                    <i data-lucide="pill" className="w-6 h-6 rotate-45 stroke-[2.2]"></i>
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase block">
-                      PRÓXIMA DOSE
-                    </span>
-                    <p className="text-base font-extrabold text-slate-800 leading-tight">
-                      10:00 - Losartana
-                    </p>
-                    <span className="text-xs font-semibold text-slate-500">50mg</span>
-                  </div>
-                </div>
-
-                <img 
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" 
-                  alt="Cuidadora responsável" 
-                  className="w-9 h-9 rounded-full object-cover border border-slate-200"
-                />
+            {/* Topo Azul com Logo e Boas-vindas */}
+            <div className="bg-[#15284B] pt-10 px-6 pb-8 rounded-b-[36px] shadow-md text-center shrink-0">
+              <div className="flex justify-center items-center gap-2 mb-3">
+                <i data-lucide="heart" className="w-8 h-8 text-emerald-400 stroke-[2.5]"></i>
+                <span className="text-3xl font-black tracking-wider text-white">CIDA</span>
               </div>
-
-              {/* Atalhos Rápidos */}
-              <section>
-                <h2 className="text-lg font-bold text-slate-800 mb-3">
-                  Atalhos rápidos
-                </h2>
-                
-                <div className="grid grid-cols-2 gap-3.5">
-                  {/* Meus Remédios */}
-                  <button 
-                    type="button"
-                    className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-start gap-2.5 hover:bg-slate-50 transition-colors text-left"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                      <i data-lucide="pill" className="w-5 h-5 rotate-45 stroke-[2.2]"></i>
-                    </div>
-                    <span className="font-bold text-slate-800 text-sm leading-snug">
-                      Meus Remédios
-                    </span>
-                  </button>
-
-                  {/* Minha Rotina */}
-                  <button 
-                    type="button"
-                    className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-start gap-2.5 hover:bg-slate-50 transition-colors text-left"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
-                      <i data-lucide="calendar" className="w-5 h-5 stroke-[2.2]"></i>
-                    </div>
-                    <span className="font-bold text-slate-800 text-sm leading-snug">
-                      Minha Rotina
-                    </span>
-                  </button>
-
-                  {/* Anotações */}
-                  <button 
-                    type="button"
-                    className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-start gap-2.5 hover:bg-slate-50 transition-colors text-left"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                      <i data-lucide="file-text" className="w-5 h-5 stroke-[2.2]"></i>
-                    </div>
-                    <span className="font-bold text-slate-800 text-sm leading-snug">
-                      Anotações
-                    </span>
-                  </button>
-
-                  {/* Contatos */}
-                  <button 
-                    type="button"
-                    className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-start gap-2.5 hover:bg-slate-50 transition-colors text-left"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-                      <i data-lucide="phone" className="w-5 h-5 stroke-[2.2]"></i>
-                    </div>
-                    <span className="font-bold text-slate-800 text-sm leading-snug">
-                      Contatos
-                    </span>
-                  </button>
-                </div>
-              </section>
-
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">
+                Que bom ver você!
+              </h1>
+              <p className="text-slate-300 text-sm font-medium mt-1">
+                Digite seus dados para acessar sua rotina
+              </p>
             </div>
 
-            {/* Barra de Navegação Inferior */}
-            <nav className="bg-white border-t border-slate-100 py-3 px-6 flex justify-between items-center">
-              <button type="button" className="flex flex-col items-center gap-1 text-slate-900 font-bold">
-                <i data-lucide="home" className="w-5 h-5 stroke-[2.2]"></i>
-                <span className="text-[11px]">Home</span>
-              </button>
+            {/* Formulário Principal */}
+            <div className="flex-1 px-6 py-6 flex flex-col justify-center">
+              <form 
+                className="space-y-4" 
+                onSubmit={(e) => { 
+                  e.preventDefault(); 
+                  window.location.href = 'pages/home.html';
+                }}
+              >
+                
+                {/* Campo Telefone / CPF */}
+                <div>
+                  <label className="block text-sm font-bold text-slate-800 mb-1.5 ml-1">
+                    Seu Celular ou CPF
+                  </label>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-4 text-slate-500">
+                      <i data-lucide="user" className="w-5 h-5"></i>
+                    </span>
+                    <input 
+                      type="text" 
+                      defaultValue="(11) 98765-4321" 
+                      className="w-full bg-white text-slate-900 font-bold pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm"
+                    />
+                  </div>
+                </div>
 
-              <button type="button" className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 font-medium transition-colors">
-                <i data-lucide="pill" className="w-5 h-5 rotate-45 stroke-[2]"></i>
-                <span className="text-[11px]">Remédios</span>
-              </button>
+                {/* Campo Senha com Alternância Segura sem Quebras */}
+                <div>
+                  <label className="block text-sm font-bold text-slate-800 mb-1.5 ml-1">
+                    Sua Senha
+                  </label>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-4 text-slate-500">
+                      <i data-lucide="lock" className="w-5 h-5"></i>
+                    </span>
+                    <input 
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={`w-full bg-white text-slate-900 font-bold pl-12 pr-14 py-4 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm ${
+                        !showPassword ? 'tracking-widest' : 'tracking-normal'
+                      }`}
+                    />
+                    
+                    {/* Botão de Alternar Olho em SVG Nativo (não quebra o React) */}
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
+                      className="absolute right-2 w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-800 active:scale-90 transition-transform cursor-pointer"
+                    >
+                      {showPassword ? (
+                        /* Ícone Olho Aberto (Eye) */
+                        <svg className="w-5 h-5 stroke-[2.2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ) : (
+                        /* Ícone Olho Cortado/Fechado (Eye-off) */
+                        <svg className="w-5 h-5 stroke-[2.2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m15 18-.722-3.25" />
+                          <path d="M2 8a10.645 10.645 0 0 0 20 0" />
+                          <path d="m20 15-1.726-2.05" />
+                          <path d="m4 15 1.726-2.05" />
+                          <path d="m9 18 .722-3.25" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-              <button type="button" className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 font-medium transition-colors">
-                <i data-lucide="calendar" className="w-5 h-5 stroke-[2]"></i>
-                <span className="text-[11px]">Rotina</span>
-              </button>
+                {/* Botão Entrar */}
+                <button 
+                  type="submit"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition-all text-white font-extrabold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-emerald-700/20 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                >
+                  <span>Entrar no CIDA</span>
+                  <i data-lucide="arrow-right" className="w-5 h-5 stroke-[2.5]"></i>
+                </button>
 
-              <button type="button" className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 font-medium transition-colors">
-                <i data-lucide="user" className="w-5 h-5 stroke-[2]"></i>
-                <span className="text-[11px]">Perfil</span>
-              </button>
-            </nav>
+                <div className="text-center pt-1">
+                  <button 
+                    type="button" 
+                    onClick={() => alert("Ajuda para recuperar acesso")}
+                    className="text-xs font-bold text-slate-500 hover:text-slate-800 underline p-1 cursor-pointer"
+                  >
+                    Esqueceu a senha? Peça ajuda aqui
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Separador e Acesso ao Cuidador */}
+            <div className="p-6 pt-0 shrink-0">
+              <div className="bg-white rounded-2xl p-4 border-2 border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+                    <i data-lucide="heart-handshake" className="w-5 h-5 stroke-[2.2]"></i>
+                  </div>
+                  <div className="text-left">
+                    <h2 className="text-xs font-bold text-slate-900 leading-tight">
+                      É familiar ou cuidador?
+                    </h2>
+                    <span className="text-[11px] font-medium text-slate-500 block mt-0.5">
+                      Acesse a área de gerenciamento
+                    </span>
+                  </div>
+                </div>
+
+                <button 
+                  type="button" 
+                  onClick={() => alert("Redirecionando para login do cuidador")}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs py-2 px-3 rounded-xl border border-slate-300 transition-colors cursor-pointer"
+                >
+                  Entrar aqui
+                </button>
+              </div>
+            </div>
 
           </div>
         </div>
@@ -192,7 +180,7 @@
     }
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    root.render(<LoginScreen />);
   </script>
 </body>
 </html>

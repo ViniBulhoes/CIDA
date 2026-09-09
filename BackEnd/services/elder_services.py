@@ -1,40 +1,58 @@
 import BackEnd.models.elder_models as elder_models
 
-elders = []
+
+idosos = []
 contador_id = 1
 
+
 def listar_idosos():
-    return elders
+    return idosos
+
 
 def criar_idoso(idoso: elder_models.ElderCreate):
     global contador_id
 
-    novo_elder = elder_models.Elder(
-        id = contador_id,
+    novo_idoso = elder_models.Elder(
+        id=contador_id,
         **idoso.model_dump()
     )
 
     contador_id += 1
-    elders.append(novo_elder)
-    return novo_elder
+    idosos.append(novo_idoso)
+    return novo_idoso
 
-def get_elder_por_id(elder_id: int):
-    for elder in elders:
-        if elder.id == elder_id:
-            return elder
+
+def get_idoso_por_id(idoso_id: int):
+    for idoso in idosos:
+        if idoso.id == idoso_id:
+            return idoso
     return None
 
-def atualizar_elder(elder_id: int, elder_atualizado: elder_models.Elder):
-    for index, elder in enumerate(elders):
-        if elder.id == elder_id:
-            elder_atualizado.id = elder_id
-            elders[index] = elder_atualizado
-            return elder_atualizado
+
+def atualizar_idoso(
+    idoso_id: int,
+    idoso_atualizado: elder_models.Elder
+):
+    for index, idoso in enumerate(idosos):
+        if idoso.id == idoso_id:
+            idoso_atualizado.id = idoso_id
+            idosos[index] = idoso_atualizado
+            return idoso_atualizado
     return None
 
-def deletar_elder(elder_id: int):
-    for index, elder in enumerate(elders):
-        if elder.id == elder_id:
-            del elders[index]
+
+def deletar_idoso(idoso_id: int):
+    for index, idoso in enumerate(idosos):
+        if idoso.id == idoso_id:
+            del idosos[index]
             return True
     return False
+
+
+def medicamentos_por_idoso(idoso_id: int):
+    idoso = get_idoso_por_id(idoso_id)
+
+    if idoso:
+        return idoso.medicamentos
+
+    return None
