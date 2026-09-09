@@ -7,11 +7,6 @@ class ElderCreate(models.BaseModel):
     email: str
     senha: str
     data_nascimento: str
-    doencas: str
-    alergias: str
-    medicamentos: str
-    historico_acidentes: str
-    observacoes: str
 
 class Elder(ElderCreate):
     id: int
