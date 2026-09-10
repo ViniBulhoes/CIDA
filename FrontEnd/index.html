@@ -138,12 +138,24 @@
                 <div className="text-center pt-1">
                   <button 
                     type="button" 
-                    onClick={() => alert("Ajuda para recuperar acesso")}
+                    onClick={() => window.location.href = 'pages/recuperar-senha.html'}
                     className="text-xs font-bold text-slate-500 hover:text-slate-800 underline p-1 cursor-pointer"
                   >
                     Esqueceu a senha? Peça ajuda aqui
                   </button>
                 </div>
+
+                <div className="text-center pt-2">
+                  <span className="text-xs font-medium text-slate-500">Ainda não tem conta? </span>
+                  <button 
+                    type="button" 
+                    onClick={() => window.location.href = 'pages/cadastro.html'}
+                    className="text-xs font-bold text-emerald-700 hover:text-emerald-800 underline cursor-pointer"
+                  >
+                    Cadastre-se grátis
+                  </button>
+                </div>
+                
               </form>
             </div>
 
