@@ -1,4 +1,4 @@
-import BackEnd.models.user_models as user_models
+import models.user_models as user_models
 
 def home ():
     return {"message": "API em funcionamento!"} 
