@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { criarUsuario } from '../services/api';
 import { 
   Heart, 
   ArrowLeft, 
@@ -16,7 +17,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 
-export default function Cadastro() {
+export default function Cadastro(usuario) {
   const navigate = useNavigate();
 
   const [nome, setNome] = useState("");
@@ -70,7 +71,12 @@ export default function Cadastro() {
     };
     console.log("Cadastro enviado para o backend:", payload);
 
-    setSucesso(true);
+    criarUsuario(payload).then(() => {
+      setSucesso(true);
+    }).catch((error) => {
+      console.error("Erro ao criar usuário:", error);
+      setMensagemErro("Ocorreu um erro ao criar sua conta. Por favor, tente novamente.");
+    });
   };
 
   return (
