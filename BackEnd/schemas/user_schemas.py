@@ -5,7 +5,7 @@ class UserRegistration(BaseModel):
     nome: str
     email: str
     senha: str
-    role: Literal ["elder", "caregiver", "family_member"]
+    role: Literal ["elder", "caregiver", "family"]
     telefone: str
 
     # idoso
