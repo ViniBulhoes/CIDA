@@ -28,7 +28,7 @@ export default function Perfil() {
           rightAction={
             <button 
               type="button" 
-              onClick={() => alert("Abrir Configurações do Aplicativo")}
+              onClick={() => navigate('/configuracoes')}
               aria-label="Configurações"
               className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white transition-all cursor-pointer border border-white/15 shadow-sm"
             >
