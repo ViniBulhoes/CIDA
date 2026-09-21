@@ -4,30 +4,19 @@ import {
   Volume2, 
   Type, 
   MapPin, 
-  UserCheck, 
   UserX,
   HelpCircle, 
-  CheckCircle2, 
   AlertCircle
 } from 'lucide-react';
 import MobileContainer from '../components/MobileContainer';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
+import { useConfig } from '../context/ConfigContext';
 
 export default function Configuracoes() {
-  // 1. Estados dos Toggles
-  const [notificacoes, setNotificacoes] = useState(true);
-  const [alarmeAlto, setAlarmeAlto] = useState(true);
-  const [localizacaoSOS, setLocalizacaoSOS] = useState(true);
-  const [relatorioSemanal, setRelatorioSemanal] = useState(true);
-
-  // 1.1 Barra de escala de texto (1 = Normal, 2 = Médio, 3 = Grande, 4 = Muito Grande)
-  const [escalaTexto, setEscalaTexto] = useState(2);
-
-  // 2. Estado para o modal de proteção do cuidador
+  const { config, updateConfig } = useConfig();
   const [solicitacaoEnviada, setSolicitacaoEnviada] = useState(false);
 
-  // Rótulos amigáveis para a escala
   const niveisTexto = {
     1: 'Normal',
     2: 'Médio',
@@ -35,16 +24,9 @@ export default function Configuracoes() {
     4: 'Muito Grande'
   };
 
-  const solicitarDesvinculacao = () => {
-    setSolicitacaoEnviada(true);
-  };
-
   return (
     <MobileContainer>
-      {/* Área Rolável de Conteúdo */}
       <div className="flex-1 overflow-y-auto">
-        
-        {/* Header com botão de voltar */}
         <Header 
           title="Configurações" 
           subtitle="Preferências e Acessibilidade"
@@ -52,10 +34,9 @@ export default function Configuracoes() {
           backPath="/perfil"
         />
 
-        {/* Lista de Opções */}
         <div className="px-5 pt-5 pb-6 space-y-6">
 
-          {/* SEÇÃO 1: ACESSIBILIDADE E VISIBILIDADE */}
+          {/* SEÇÃO 1: VISIBILIDADE E SOM */}
           <section>
             <h2 className="text-base font-bold text-slate-900 mb-3 px-1">
               Visibilidade e Som
@@ -63,7 +44,7 @@ export default function Configuracoes() {
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100 overflow-hidden">
               
-              {/* Barra de Escala de Texto */}
+              {/* Slider de Texto */}
               <div className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -81,19 +62,18 @@ export default function Configuracoes() {
                   </div>
 
                   <span className="bg-blue-100 text-blue-800 font-bold text-xs px-2.5 py-1 rounded-full">
-                    {niveisTexto[escalaTexto]}
+                    {niveisTexto[config.escalaTexto]}
                   </span>
                 </div>
 
-                {/* Slider de Escala */}
                 <div className="pt-2 px-1">
                   <input 
                     type="range" 
                     min="1" 
                     max="4" 
-                    step="1"
-                    value={escalaTexto}
-                    onChange={(e) => setEscalaTexto(Number(e.target.value))}
+                    step="1" 
+                    value={config.escalaTexto}
+                    onChange={(e) => updateConfig('escalaTexto', Number(e.target.value))}
                     aria-label="Controle deslizante de tamanho do texto"
                     className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   />
@@ -105,19 +85,18 @@ export default function Configuracoes() {
                   </div>
                 </div>
 
-                {/* Pré-visualização do texto */}
                 <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 text-slate-800 font-medium transition-all text-center">
                   <span className={
-                    escalaTexto === 1 ? 'text-xs' : 
-                    escalaTexto === 2 ? 'text-sm' : 
-                    escalaTexto === 3 ? 'text-base font-semibold' : 'text-lg font-bold'
+                    config.escalaTexto === 1 ? 'text-xs' : 
+                    config.escalaTexto === 2 ? 'text-sm' : 
+                    config.escalaTexto === 3 ? 'text-base font-semibold' : 'text-lg font-bold'
                   }>
                     Exemplo: Tomar Losartana às 10:00
                   </span>
                 </div>
               </div>
 
-              {/* Alarme Sonoro Alto */}
+              {/* Alarme Reforçado */}
               <div className="p-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
@@ -135,16 +114,16 @@ export default function Configuracoes() {
 
                 <button
                   type="button"
-                  onClick={() => setAlarmeAlto(!alarmeAlto)}
-                  aria-pressed={alarmeAlto}
+                  onClick={() => updateConfig('alarmeAlto', !config.alarmeAlto)}
+                  aria-pressed={config.alarmeAlto}
                   aria-label="Alternar alarme sonoro reforçado"
                   className={`w-12 h-7 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer focus:outline-none ${
-                    alarmeAlto ? 'bg-emerald-500' : 'bg-slate-300'
+                    config.alarmeAlto ? 'bg-emerald-500' : 'bg-slate-300'
                   }`}
                 >
                   <div 
                     className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
-                      alarmeAlto ? 'translate-x-5' : 'translate-x-0'
+                      config.alarmeAlto ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />
                 </button>
@@ -153,7 +132,7 @@ export default function Configuracoes() {
             </div>
           </section>
 
-          {/* SEÇÃO 2: ALERTAS E LEMBRETES */}
+          {/* SEÇÃO 2: LEMBRETES E ROTINA */}
           <section>
             <h2 className="text-base font-bold text-slate-900 mb-3 px-1">
               Lembretes e Rotina
@@ -161,7 +140,7 @@ export default function Configuracoes() {
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100 overflow-hidden">
               
-              {/* Notificações de Remédio */}
+              {/* Notificações */}
               <div className="p-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
@@ -179,16 +158,16 @@ export default function Configuracoes() {
 
                 <button
                   type="button"
-                  onClick={() => setNotificacoes(!notificacoes)}
-                  aria-pressed={notificacoes}
+                  onClick={() => updateConfig('notificacoes', !config.notificacoes)}
+                  aria-pressed={config.notificacoes}
                   aria-label="Alternar lembretes de horários"
                   className={`w-12 h-7 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer focus:outline-none ${
-                    notificacoes ? 'bg-emerald-500' : 'bg-slate-300'
+                    config.notificacoes ? 'bg-emerald-500' : 'bg-slate-300'
                   }`}
                 >
                   <div 
                     className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
-                      notificacoes ? 'translate-x-5' : 'translate-x-0'
+                      config.notificacoes ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />
                 </button>
@@ -212,16 +191,16 @@ export default function Configuracoes() {
 
                 <button
                   type="button"
-                  onClick={() => setLocalizacaoSOS(!localizacaoSOS)}
-                  aria-pressed={localizacaoSOS}
+                  onClick={() => updateConfig('localizacaoSOS', !config.localizacaoSOS)}
+                  aria-pressed={config.localizacaoSOS}
                   aria-label="Alternar envio de localização no SOS"
                   className={`w-12 h-7 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer focus:outline-none ${
-                    localizacaoSOS ? 'bg-emerald-500' : 'bg-slate-300'
+                    config.localizacaoSOS ? 'bg-emerald-500' : 'bg-slate-300'
                   }`}
                 >
                   <div 
                     className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
-                      localizacaoSOS ? 'translate-x-5' : 'translate-x-0'
+                      config.localizacaoSOS ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />
                 </button>
@@ -230,7 +209,7 @@ export default function Configuracoes() {
             </div>
           </section>
 
-          {/* SEÇÃO 3: CUIDADORES VINCULADOS COM REGRA DE SEGURANÇA */}
+          {/* SEÇÃO 3: CUIDADOR VINCULADO (SEM TOGGLE) */}
           <section>
             <h2 className="text-base font-bold text-slate-900 mb-3 px-1">
               Cuidador Vinculado
@@ -238,58 +217,37 @@ export default function Configuracoes() {
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
               
-              {/* Card do Cuidador Atual */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <img 
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80" 
-                    alt="Enfermeira Ana Beatriz" 
-                    className="w-12 h-12 rounded-full object-cover border border-slate-200"
-                  />
-                  <div>
-                    <h3 className="text-sm font-extrabold text-slate-900 leading-tight">
-                      Ana Beatriz (Enfermeira)
-                    </h3>
-                    <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-0.5">
-                      Responsável Ativo
+              {/* Dados do Cuidador */}
+              <div className="flex items-center gap-3.5">
+                <img 
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80" 
+                  alt="Enfermeira Ana Beatriz" 
+                  className="w-12 h-12 rounded-full object-cover border border-slate-200 shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-extrabold text-slate-900 leading-tight truncate">
+                    Ana Beatriz (Enfermeira)
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span className="text-xs font-semibold text-emerald-700">
+                      Acompanhamento ativo
                     </span>
                   </div>
                 </div>
-
-                {/* Toggle de Acesso a Relatórios */}
-                <div className="flex flex-col items-end">
-                  <button
-                    type="button"
-                    onClick={() => setRelatorioSemanal(!relatorioSemanal)}
-                    aria-pressed={relatorioSemanal}
-                    aria-label="Alternar envio de relatórios semanais"
-                    className={`w-12 h-7 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer focus:outline-none ${
-                      relatorioSemanal ? 'bg-emerald-500' : 'bg-slate-300'
-                    }`}
-                  >
-                    <div 
-                      className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
-                        relatorioSemanal ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                  <span className="text-[10px] font-semibold text-slate-400 mt-1">
-                    Relatórios
-                  </span>
-                </div>
               </div>
 
-              {/* Botão de Tentar Remover o Cuidador */}
+              {/* Botão de Solicitar Desvinculação */}
               <button
                 type="button"
-                onClick={solicitarDesvinculacao}
+                onClick={() => setSolicitacaoEnviada(true)}
                 className="w-full bg-slate-50 hover:bg-red-50 hover:text-red-700 text-slate-600 font-bold text-xs py-3 px-4 rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
               >
                 <UserX className="w-4 h-4" />
                 <span>Solicitar Desvinculação do Cuidador</span>
               </button>
 
-              {/* Mensagem de Confirmação Obrigatória / Proteção do Idoso */}
+              {/* Alerta de Confirmação Obrigatória */}
               {solicitacaoEnviada && (
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-start gap-3 animate-fadeIn">
                   <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
@@ -349,7 +307,6 @@ export default function Configuracoes() {
         </div>
       </div>
 
-      {/* Footer Componentizado */}
       <BottomNav />
     </MobileContainer>
   );

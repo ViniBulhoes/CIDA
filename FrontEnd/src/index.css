@@ -2,9 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Reset para garantir que a viewport mobile ocupe a tela toda */
+/* Trava a altura padrão e mantém o espaço da scrollbar sempre reservado */
+html {
+  overflow-y: scroll;
+}
+
 html, body, #root {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
+  background-color: #0f172a; /* bg-slate-900 para não piscar branco ao navegar */
 }

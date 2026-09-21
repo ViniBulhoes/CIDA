@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import MobileContainer from '../components/MobileContainer';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
@@ -8,6 +8,7 @@ import BottomNav from '../components/BottomNav';
 export default function Rotina() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const dateInputRef = useRef(null);
 
   const mudarDia = (dias) => {
     setCurrentDate((prevDate) => {
@@ -15,6 +16,33 @@ export default function Rotina() {
       novaData.setDate(novaData.getDate() + dias);
       return novaData;
     });
+  };
+
+  // Converte objeto Date para 'YYYY-MM-DD'
+  const formatarParaInputDate = (date) => {
+    const ano = date.getFullYear();
+    const mes = String(date.getMonth() + 1).padStart(2, '0');
+    const dia = String(date.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  };
+
+  // Trata a seleção do usuário no calendário
+  const handleDateChange = (e) => {
+    if (!e.target.value) return;
+    const [ano, mes, dia] = e.target.value.split('-').map(Number);
+    // Instancia considerando o horário local
+    setCurrentDate(new Date(ano, mes - 1, dia));
+  };
+
+  // Aciona o calendário nativo
+  const abrirCalendario = () => {
+    if (dateInputRef.current) {
+      if ('showPicker' in HTMLInputElement.prototype) {
+        dateInputRef.current.showPicker();
+      } else {
+        dateInputRef.current.focus();
+      }
+    }
   };
 
   const formatarData = (data) => {
@@ -61,33 +89,54 @@ export default function Rotina() {
               className="rounded-full transition-transform active:scale-90 hover:opacity-90 cursor-pointer focus:outline-none"
             >
               <img 
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80" 
+                src="https://images.pexels.com/photos/8439740/pexels-photo-8439740.jpeg" 
                 alt="Foto de perfil de Seu João" 
                 className="w-11 h-11 rounded-full object-cover border-2 border-white/80 shadow"
               />
             </button>
           }
         >
-          {/* Navegador de Datas Interativo como filho do Header */}
-          <div className="flex items-center justify-between bg-white/10 backdrop-blur-md rounded-2xl py-2 px-3 border border-white/15 text-white shadow-inner mt-3">
+          {/* Navegador de Datas Interativo */}
+          <div className="relative flex items-center justify-between bg-white/10 backdrop-blur-md rounded-2xl py-2 px-3 border border-white/15 text-white shadow-inner mt-3">
+            
+            {/* Input nativo de data invisível mas funcional */}
+            <input 
+              ref={dateInputRef}
+              type="date" 
+              value={formatarParaInputDate(currentDate)}
+              onChange={handleDateChange}
+              className="absolute inset-0 opacity-0 pointer-events-none w-full h-full"
+              tabIndex={-1}
+              aria-hidden="true"
+            />
+
             <button 
               type="button" 
               onClick={() => mudarDia(-1)}
               aria-label="Dia anterior"
-              className="w-10 h-10 flex items-center justify-center hover:bg-white/20 active:scale-90 rounded-xl transition-all cursor-pointer"
+              className="w-10 h-10 flex items-center justify-center hover:bg-white/20 active:scale-90 rounded-xl transition-all cursor-pointer z-10"
             >
               <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
             </button>
 
-            <span className="font-extrabold text-sm tracking-wide select-none">
-              {formatarData(currentDate)}
-            </span>
+            {/* Botão da Data Central: abre o calendário */}
+            <button
+              type="button"
+              onClick={abrirCalendario}
+              title="Clique para escolher uma data no calendário"
+              className="flex items-center gap-2 py-1.5 px-3 rounded-xl hover:bg-white/20 active:scale-95 transition-all cursor-pointer z-10"
+            >
+              <CalendarIcon className="w-4 h-4 opacity-80" />
+              <span className="font-extrabold text-sm tracking-wide select-none">
+                {formatarData(currentDate)}
+              </span>
+            </button>
 
             <button 
               type="button" 
               onClick={() => mudarDia(1)}
               aria-label="Próximo dia"
-              className="w-10 h-10 flex items-center justify-center hover:bg-white/20 active:scale-90 rounded-xl transition-all cursor-pointer"
+              className="w-10 h-10 flex items-center justify-center hover:bg-white/20 active:scale-90 rounded-xl transition-all cursor-pointer z-10"
             >
               <ChevronRight className="w-5 h-5 stroke-[2.5]" />
             </button>

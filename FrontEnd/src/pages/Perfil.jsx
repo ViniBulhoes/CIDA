@@ -43,7 +43,7 @@ export default function Perfil() {
           {/* Card Principal: Dados do Idoso */}
           <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center gap-4">
             <img 
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=140&auto=format&fit=crop&q=80" 
+              src="https://images.pexels.com/photos/8439740/pexels-photo-8439740.jpeg" 
               alt="João Silva" 
               className="w-14 h-14 rounded-full object-cover border-2 border-emerald-500 shadow-sm"
             />

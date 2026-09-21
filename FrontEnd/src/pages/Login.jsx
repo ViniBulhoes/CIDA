@@ -13,12 +13,11 @@ import {
 export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [identificador, setIdentificador] = useState("(11) 98765-4321");
-  const [password, setPassword] = useState("123456");
+  const [identificador, setIdentificador] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // No Vite com React Router, a transição é instantânea sem recarregar a tela:
     navigate('/home');
   };
 
@@ -51,14 +50,15 @@ export default function Login() {
                 Seu Celular ou CPF
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-4 text-slate-500">
+                <span className="absolute left-4 text-slate-400">
                   <User className="w-5 h-5" />
                 </span>
                 <input 
                   type="text" 
                   value={identificador}
                   onChange={(e) => setIdentificador(e.target.value)}
-                  className="w-full bg-white text-slate-900 font-bold pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm"
+                  placeholder="(11) 98765-4321 ou CPF"
+                  className="w-full bg-white text-slate-900 font-bold pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
                 />
               </div>
             </div>
@@ -69,22 +69,23 @@ export default function Login() {
                 Sua Senha
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-4 text-slate-500">
+                <span className="absolute left-4 text-slate-400">
                   <Lock className="w-5 h-5" />
                 </span>
                 <input 
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white text-slate-900 font-bold pl-12 pr-14 py-4 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm"
+                  placeholder="Digite sua senha de 6 dígitos"
+                  className="w-full bg-white text-slate-900 font-bold pl-12 pr-14 py-4 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
                 />
                 
-                {/* Alternância de Visibilidade com Ícones Lucide-React */}
+                {/* Alternância de Visibilidade */}
                 <button 
                   type="button" 
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
-                  className="absolute right-2 w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-800 active:scale-90 transition-transform cursor-pointer"
+                  className="absolute right-2 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-700 active:scale-90 transition-transform cursor-pointer"
                 >
                   {showPassword ? (
                     <Eye className="w-5 h-5 stroke-[2.2]" />
@@ -104,7 +105,7 @@ export default function Login() {
               <ArrowRight className="w-5 h-5 stroke-[2.5]" />
             </button>
 
-            {/* Links Auxiliares via React Router */}
+            {/* Links Auxiliares */}
             <div className="text-center pt-1">
               <button 
                 type="button" 
@@ -147,7 +148,7 @@ export default function Login() {
 
             <button 
               type="button" 
-              onClick={() => alert("Redirecionando para login do cuidador")}
+              onClick={() => navigate('/login-cuidador')}
               className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs py-2 px-3 rounded-xl border border-slate-300 transition-colors cursor-pointer"
             >
               Entrar aqui

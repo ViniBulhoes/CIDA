@@ -101,7 +101,7 @@ export default function RecuperarSenha() {
                 </p>
               </div>
               <button 
-                type="button"
+                type="button" 
                 onClick={() => navigate('/')}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition-all text-white font-extrabold text-base py-3.5 px-4 rounded-2xl shadow-md cursor-pointer mt-2"
               >
@@ -125,15 +125,15 @@ export default function RecuperarSenha() {
                   Seu Celular ou CPF
                 </label>
                 <div className="relative flex items-center">
-                  <span className="absolute left-4 text-slate-500">
+                  <span className="absolute left-4 text-slate-400">
                     <User className="w-5 h-5" />
                   </span>
                   <input 
                     type="text" 
                     value={identificador}
                     onChange={(e) => setIdentificador(e.target.value)}
-                    placeholder="(11) 98765-4321"
-                    className="w-full bg-white text-slate-900 font-bold pl-12 pr-4 py-3.5 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm"
+                    placeholder="(11) 98765-4321 ou CPF"
+                    className="w-full bg-white text-slate-900 font-bold pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
                   />
                 </div>
               </div>
@@ -144,7 +144,7 @@ export default function RecuperarSenha() {
                   Nova Senha
                 </label>
                 <div className="relative flex items-center">
-                  <span className="absolute left-4 text-slate-500">
+                  <span className="absolute left-4 text-slate-400">
                     <Lock className="w-5 h-5" />
                   </span>
                   <input 
@@ -152,12 +152,12 @@ export default function RecuperarSenha() {
                     value={novaSenha}
                     onChange={(e) => setNovaSenha(e.target.value)}
                     placeholder="Mínimo de 6 dígitos"
-                    className="w-full bg-white text-slate-900 font-bold pl-12 pr-12 py-3.5 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm"
+                    className="w-full bg-white text-slate-900 font-bold pl-12 pr-14 py-4 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
                   />
                   <button 
                     type="button" 
                     onClick={() => setShowNovaSenha(!showNovaSenha)}
-                    className="absolute right-2 w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-800 active:scale-90 transition-transform cursor-pointer"
+                    className="absolute right-2 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-700 active:scale-90 transition-transform cursor-pointer"
                     aria-label={showNovaSenha ? "Ocultar senha" : "Ver senha"}
                   >
                     {showNovaSenha ? (
@@ -175,7 +175,7 @@ export default function RecuperarSenha() {
                   Repita a Nova Senha
                 </label>
                 <div className="relative flex items-center">
-                  <span className="absolute left-4 text-slate-500">
+                  <span className="absolute left-4 text-slate-400">
                     <CheckCircle className="w-5 h-5" />
                   </span>
                   <input 
@@ -183,12 +183,12 @@ export default function RecuperarSenha() {
                     value={confirmarSenha}
                     onChange={(e) => setConfirmarSenha(e.target.value)}
                     placeholder="Digite a mesma senha"
-                    className="w-full bg-white text-slate-900 font-bold pl-12 pr-12 py-3.5 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm"
+                    className="w-full bg-white text-slate-900 font-bold pl-12 pr-14 py-4 rounded-2xl border-2 border-slate-300 focus:border-emerald-500 focus:outline-none text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
                   />
                   <button 
                     type="button" 
                     onClick={() => setShowConfirmarSenha(!showConfirmarSenha)}
-                    className="absolute right-2 w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-800 active:scale-90 transition-transform cursor-pointer"
+                    className="absolute right-2 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-700 active:scale-90 transition-transform cursor-pointer"
                     aria-label={showConfirmarSenha ? "Ocultar confirmação" : "Ver confirmação"}
                   >
                     {showConfirmarSenha ? (
@@ -203,7 +203,7 @@ export default function RecuperarSenha() {
               {/* Botão de Gravar */}
               <button 
                 type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition-all text-white font-extrabold text-base py-4 px-6 rounded-2xl shadow-lg shadow-emerald-700/20 flex items-center justify-center gap-2 cursor-pointer pt-3"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition-all text-white font-extrabold text-base py-4 px-6 rounded-2xl shadow-lg shadow-emerald-700/20 flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
                 <span>Salvar Nova Senha</span>
                 <ArrowRight className="w-5 h-5 stroke-[2.5]" />

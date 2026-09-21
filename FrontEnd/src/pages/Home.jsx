@@ -25,7 +25,7 @@ export default function Home() {
               className="rounded-full transition-transform active:scale-90 hover:opacity-90 cursor-pointer focus:outline-none"
             >
               <img 
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80" 
+                src="https://images.pexels.com/photos/8439740/pexels-photo-8439740.jpeg" 
                 alt="Foto de perfil de Seu João" 
                 className="w-11 h-11 rounded-full object-cover border-2 border-white/80 shadow"
               />

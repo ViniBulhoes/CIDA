@@ -1,23 +1,105 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Mic, 
   ArrowDown, 
+  ArrowUp, 
   MapPin, 
-  Phone 
+  Phone, 
+  Loader2, 
+  AlertCircle 
 } from 'lucide-react';
 import MobileContainer from '../components/MobileContainer';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
 
+// URL base da sua API (FastAPI / backend próprio ou proxy de dados abertos)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+
 export default function Remedios() {
   const navigate = useNavigate();
-  const [busca, setBusca] = useState("");
+  const [busca, setBusca] = useState('');
+  const [termoPesquisa, setTermoPesquisa] = useState(''); // Inicializa vazio
+  const [farmacias, setFarmacias] = useState([]);
+  const [carregando, setCarregando] = useState(false);
+  const [erro, setErro] = useState(null);
+
+  // Ordenação: 'preco_asc' | 'preco_desc' | 'dist_asc' | 'dist_desc'
+  const [modoOrdenacao, setModoOrdenacao] = useState('preco_asc');
+
+  // Função para buscar os medicamentos e farmácias via API
+  const carregarMedicamentos = useCallback(async (termo) => {
+    if (!termo.trim()) {
+      setFarmacias([]);
+      return;
+    }
+
+    setCarregando(true);
+    setErro(null);
+
+    try {
+      const response = await fetch(`${API_URL}/medicamentos/busca?q=${encodeURIComponent(termo)}`);
+      
+      if (!response.ok) {
+        throw new Error('Não foi possível obter os preços no momento.');
+      }
+
+      const data = await response.json();
+      setFarmacias(data);
+    } catch (err) {
+      setErro(err.message || 'Erro ao conectar à internet.');
+      setFarmacias([]);
+    } finally {
+      setCarregando(false);
+    }
+  }, []);
+
+  // Dispara a busca quando o termo de pesquisa mudar
+  useEffect(() => {
+    carregarMedicamentos(termoPesquisa);
+  }, [carregarMedicamentos, termoPesquisa]);
+
+  // Submissão do campo de busca (Enter no teclado ou clique)
+  const handleBuscar = (e) => {
+    e.preventDefault();
+    if (busca.trim()) {
+      setTermoPesquisa(busca);
+    }
+  };
+
+  // Alternador da ordenação da seta
+  const alternarOrdenacao = () => {
+    setModoOrdenacao((atual) => {
+      if (atual === 'preco_asc') return 'preco_desc';
+      if (atual === 'preco_desc') return 'dist_asc';
+      if (atual === 'dist_asc') return 'dist_desc';
+      return 'preco_asc';
+    });
+  };
+
+  const configuracaoBotao = {
+    preco_asc: { rotulo: 'Preço', Icone: ArrowDown },
+    preco_desc: { rotulo: 'Preço', Icone: ArrowUp },
+    dist_asc: { rotulo: 'Distância', Icone: ArrowDown },
+    dist_desc: { rotulo: 'Distância', Icone: ArrowUp },
+  }[modoOrdenacao];
+
+  // Ordenação dinâmica dos dados que vieram da API
+  const farmaciasOrdenadas = useMemo(() => {
+    return [...farmacias].sort((a, b) => {
+      if (modoOrdenacao === 'preco_asc') return a.preco - b.preco;
+      if (modoOrdenacao === 'preco_desc') return b.preco - a.preco;
+      if (modoOrdenacao === 'dist_asc') return a.distanciaKm - b.distanciaKm;
+      if (modoOrdenacao === 'dist_desc') return b.distanciaKm - a.distanciaKm;
+      return 0;
+    });
+  }, [farmacias, modoOrdenacao]);
+
+  const BotaoIcone = configuracaoBotao.Icone;
 
   return (
     <MobileContainer>
-      {/* Área Rolável de Conteúdo */}
       <div className="flex-1 overflow-y-auto">
         
         {/* Topo Azul Componentizado */}
@@ -25,27 +107,27 @@ export default function Remedios() {
           title="Buscar Remédios"
           rightAction={
             <button 
-              type="button"
+              type="button" 
               onClick={() => navigate('/perfil')}
               title="Ir para o Perfil"
               aria-label="Ir para o Perfil"
               className="rounded-full transition-transform active:scale-90 hover:opacity-90 cursor-pointer focus:outline-none"
             >
               <img 
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80" 
+                src="https://images.pexels.com/photos/8439740/pexels-photo-8439740.jpeg" 
                 alt="Foto de perfil de Seu João" 
                 className="w-11 h-11 rounded-full object-cover border-2 border-white/80 shadow"
               />
             </button>
           }
         >
-          {/* Barra de Pesquisa inserida como conteúdo filho do Header */}
-          <div className="relative flex items-center mt-3">
+          {/* Formulário de Busca */}
+          <form onSubmit={handleBuscar} className="relative flex items-center mt-3">
             <span className="absolute left-4 text-slate-400">
               <Search className="w-5 h-5" />
             </span>
             <input 
-              type="text"
+              type="text" 
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Digite o nome do remédio..."
@@ -59,172 +141,134 @@ export default function Remedios() {
             >
               <Mic className="w-5 h-5" />
             </button>
-          </div>
+          </form>
         </Header>
 
-        {/* Listagem de Resultados e Farmácias */}
+        {/* Conteúdo Principal */}
         <div className="px-5 pt-5 pb-6">
           
-          {/* Contexto e Ordenação */}
+          {/* Cabeçalho de Contexto e Botão de Ordenação */}
           <div className="flex justify-between items-center mb-4 px-1">
             <div>
               <span className="text-xs font-bold text-slate-800 block">
-                Medicamentos disponíveis
+                {carregando 
+                  ? 'Buscando drogarias...' 
+                  : termoPesquisa 
+                    ? `Resultados para "${termoPesquisa}"` 
+                    : 'Medicamentos disponíveis'}
               </span>
               <span className="text-[11px] font-semibold text-slate-500">
                 São Paulo - SP
               </span>
             </div>
+            
             <button 
               type="button" 
-              className="flex items-center gap-1 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm cursor-pointer"
+              disabled={farmaciasOrdenadas.length === 0}
+              onClick={alternarOrdenacao}
+              className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm transition-colors ${
+                farmaciasOrdenadas.length === 0 
+                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                  : 'bg-white text-slate-600 border border-slate-200 cursor-pointer hover:bg-slate-50'
+              }`}
             >
-              <span>Preço</span>
-              <ArrowDown className="w-3.5 h-3.5" />
+              <span>{configuracaoBotao.rotulo}</span>
+              <BotaoIcone className="w-3.5 h-3.5 text-slate-500" />
             </button>
           </div>
 
-          {/* Lista de Drogarias */}
-          <div className="space-y-4">
-            
-            {/* Card 1: Droga Raia */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-              <div className="flex items-start justify-between mb-3.5">
-                <div className="flex items-center gap-3">
-                  <img 
-                    src="https://images.unsplash.com/photo-1586015555751-63bb77f4322a?w=100&auto=format&fit=crop&q=80" 
-                    alt="Droga Raia Fachada" 
-                    className="w-12 h-12 rounded-xl object-cover border border-slate-200"
-                  />
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 leading-tight">
-                      Droga Raia
-                    </h3>
-                    <span className="text-base font-extrabold text-emerald-600 block mt-0.5">
-                      R$ 12,90
-                    </span>
-                  </div>
-                </div>
-                
-                <span className="bg-emerald-100 text-emerald-700 font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">
-                  Menor Preço
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <button 
-                  type="button" 
-                  onClick={() => alert("Abrindo mapa...")}
-                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <MapPin className="w-4 h-4 text-slate-700" />
-                  <span>Ver Mapa</span>
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => alert("Discando para a drogaria...")}
-                  className="w-full bg-[#15284B] hover:bg-[#1f3a6d] text-white font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
-                >
-                  <Phone className="w-4 h-4" />
-                  <span>Ligar</span>
-                </button>
-              </div>
+          {/* Feedback de Carregamento (Loading) */}
+          {carregando && (
+            <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center space-y-3">
+              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+              <p className="text-sm font-bold text-slate-700">Consultando drogarias na internet...</p>
             </div>
+          )}
 
-            {/* Card 2: Drogarias Pacheco */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-              <div className="flex items-start justify-between mb-3.5">
-                <div className="flex items-center gap-3">
-                  <img 
-                    src="https://images.unsplash.com/photo-1576602976047-174e57a47881?w=100&auto=format&fit=crop&q=80" 
-                    alt="Drogarias Pacheco Fachada" 
-                    className="w-12 h-12 rounded-xl object-cover border border-slate-200"
-                  />
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 leading-tight">
-                      Drogarias Pacheco
-                    </h3>
-                    <span className="text-base font-extrabold text-emerald-600 block mt-0.5">
-                      R$ 14,50
-                    </span>
-                  </div>
-                </div>
-                
-                <span className="bg-blue-100 text-blue-700 font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">
-                  Mais Próxima
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <button 
-                  type="button" 
-                  onClick={() => alert("Abrindo mapa...")}
-                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <MapPin className="w-4 h-4 text-slate-700" />
-                  <span>Ver Mapa</span>
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => alert("Discando para a drogaria...")}
-                  className="w-full bg-[#15284B] hover:bg-[#1f3a6d] text-white font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
-                >
-                  <Phone className="w-4 h-4" />
-                  <span>Ligar</span>
-                </button>
-              </div>
+          {/* Feedback de Erro de Conexão */}
+          {!carregando && erro && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-5 text-center space-y-2.5">
+              <AlertCircle className="w-6 h-6 text-red-500 mx-auto" />
+              <p className="text-xs font-bold text-red-800">{erro}</p>
+              <button
+                type="button"
+                onClick={() => carregarMedicamentos(termoPesquisa)}
+                className="text-xs font-bold bg-white text-red-700 border border-red-200 px-3 py-1.5 rounded-lg shadow-sm cursor-pointer"
+              >
+                Tentar novamente
+              </button>
             </div>
+          )}
 
-            {/* Card 3: Pague Menos */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-              <div className="flex items-start justify-between mb-3.5">
-                <div className="flex items-center gap-3">
-                  <img 
-                    src="https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=100&auto=format&fit=crop&q=80" 
-                    alt="Pague Menos Fachada" 
-                    className="w-12 h-12 rounded-xl object-cover border border-slate-200"
-                  />
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 leading-tight">
-                      Pague Menos
-                    </h3>
-                    <span className="text-base font-extrabold text-emerald-600 block mt-0.5">
-                      R$ 15,10
-                    </span>
-                  </div>
+          {/* Lista de Resultados da API */}
+          {!carregando && !erro && (
+            <div className="space-y-4">
+              {farmaciasOrdenadas.length === 0 ? (
+                <div className="bg-white rounded-2xl p-6 border border-slate-200 text-center">
+                  <p className="text-sm font-bold text-slate-800">
+                    {termoPesquisa ? 'Nenhum medicamento encontrado' : 'Nenhum medicamento pesquisado'}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Digite o nome de um remédio na busca acima para começar a pesquisa.
+                  </p>
                 </div>
-                
-                <span className="bg-purple-100 text-purple-700 font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">
-                  Popular
-                </span>
-              </div>
+              ) : (
+                farmaciasOrdenadas.map((farmacia) => (
+                  <div 
+                    key={farmacia.id}
+                    className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between mb-3.5">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={farmacia.imagem || 'https://images.unsplash.com/photo-1586015555751-63bb77f4322a?w=100&auto=format&fit=crop&q=80'} 
+                          alt={`${farmacia.nome} Fachada`} 
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
+                        />
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                            {farmacia.nome}
+                          </h3>
+                          <span className="text-base font-extrabold text-emerald-600 block mt-0.5">
+                            R$ {Number(farmacia.preco).toFixed(2).replace('.', ',')}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {farmacia.rotulo && (
+                        <span className={`${farmacia.corRotulo || 'bg-blue-100 text-blue-700'} font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider`}>
+                          {farmacia.rotulo}
+                        </span>
+                      )}
+                    </div>
 
-              <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <button 
-                  type="button" 
-                  onClick={() => alert("Abrindo mapa...")}
-                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <MapPin className="w-4 h-4 text-slate-700" />
-                  <span>Ver Mapa</span>
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => alert("Discando para a drogaria...")}
-                  className="w-full bg-[#15284B] hover:bg-[#1f3a6d] text-white font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
-                >
-                  <Phone className="w-4 h-4" />
-                  <span>Ligar</span>
-                </button>
-              </div>
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                      <button 
+                        type="button" 
+                        onClick={() => alert(`Abrindo mapa para ${farmacia.nome}...`)}
+                        className="w-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <MapPin className="w-4 h-4 text-slate-700" />
+                        <span>Ver Mapa</span>
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => alert(`Discando para ${farmacia.nome}: ${farmacia.telefone}`)}
+                        className="w-full bg-[#15284B] hover:bg-[#1f3a6d] text-white font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                      >
+                        <Phone className="w-4 h-4" />
+                        <span>Ligar</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-
-          </div>
+          )}
 
         </div>
       </div>
 
-      {/* Footer Componentizado */}
       <BottomNav />
     </MobileContainer>
   );

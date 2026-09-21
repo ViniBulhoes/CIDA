@@ -2,29 +2,31 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { criarUsuario } from '../services/api';
 import {
-  Heart,
+  HeartHandshake,
   ArrowLeft,
   ArrowRight,
   User,
   Mail,
   Phone,
-  Calendar,
   Lock,
   CheckCircle,
   Eye,
   EyeOff,
   Check,
   AlertCircle,
+  ShieldCheck
 } from 'lucide-react';
 import MobileContainer from '../components/MobileContainer';
 
-export default function Cadastro() {
+export default function CadastroCuidador() {
   const navigate = useNavigate();
 
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
-  const [dataNascimento, setDataNascimento] = useState('');
+  const [tipoCuidador, setTipoCuidador] = useState('caregiver'); // 'caregiver' ou 'family'
+  const [vinculo, setVinculo] = useState('');
+  const [especializacao, setEspecializacao] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
 
@@ -49,17 +51,12 @@ export default function Cadastro() {
     }
 
     if (!telefone.trim()) {
-      setMensagemErro('Informe seu telefone.');
-      return;
-    }
-
-    if (!dataNascimento) {
-      setMensagemErro('Informe sua data de nascimento.');
+      setMensagemErro('Informe seu celular ou telefone de contato.');
       return;
     }
 
     if (!senha || senha.length < 6) {
-      setMensagemErro('A senha deve ter pelo menos 6 números ou letras.');
+      setMensagemErro('A senha deve conter pelo menos 6 caracteres.');
       return;
     }
 
@@ -68,30 +65,28 @@ export default function Cadastro() {
       return;
     }
 
-    // Role fixa como 'elder' para cadastro de idoso
+    // Envia com a role de cuidador/familiar selecionada
     const payload = {
       nome: nome.trim(),
       email: email.trim().toLowerCase(),
       senha,
-      role: 'elder',
+      role: 'caregiver', // 'caregiver' ou cuidador no banco de dados
       telefone: telefone.trim(),
-      data_nascimento: dataNascimento || null,
-      vinculo: null,
-      especializacao: null,
+      data_nascimento: null,
+      vinculo: vinculo.trim() || (tipoCuidador === 'caregiver' ? 'Cuidador Profissional' : 'Familiar'),
+      especializacao: especializacao.trim() || null,
       observacoes: null,
       rotinas: null,
     };
 
     try {
       setCarregando(true);
-      console.log('Enviando dados do idoso para a API:', payload);
+      console.log('Enviando cadastro de cuidador:', payload);
       await criarUsuario(payload);
       setSucesso(true);
     } catch (error) {
-      console.error('Erro ao criar usuário:', error);
-      setMensagemErro(
-        error.message || 'Não foi possível criar a conta.',
-      );
+      console.error('Erro ao cadastrar cuidador:', error);
+      setMensagemErro(error.message || 'Não foi possível concluir o cadastro.');
     } finally {
       setCarregando(false);
     }
@@ -106,19 +101,19 @@ export default function Cadastro() {
           </div>
 
           <h1 className="text-2xl font-black text-slate-900">
-            Cadastro realizado!
+            Cadastro de Cuidador Concluído!
           </h1>
 
           <p className="mt-3 text-sm font-semibold text-slate-500">
-            Sua conta foi criada com sucesso.
+            Sua conta de gerenciamento foi criada com sucesso.
           </p>
 
           <button
             type="button"
-            onClick={() => navigate('/')}
-            className="mt-6 w-full rounded-2xl bg-emerald-600 px-4 py-3.5 font-extrabold text-white hover:bg-emerald-700 active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-emerald-700/20"
+            onClick={() => navigate('/login-cuidador')}
+            className="mt-6 w-full rounded-2xl bg-[#15284B] px-4 py-3.5 font-extrabold text-white hover:bg-[#1f3a6d] active:scale-[0.98] transition-all cursor-pointer shadow-lg"
           >
-            Ir para o login
+            Acessar Área do Cuidador
           </button>
         </div>
       </MobileContainer>
@@ -127,36 +122,39 @@ export default function Cadastro() {
 
   return (
     <MobileContainer>
-      {/* Topo Azul com Botão Voltar */}
+      {/* Topo Azul do Cuidador */}
       <header className="shrink-0 rounded-b-[36px] bg-[#15284B] px-6 pb-6 pt-8 shadow-md">
         <div className="mb-3 flex items-center justify-between">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/login-cuidador')}
             className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all cursor-pointer"
-            aria-label="Voltar"
+            aria-label="Voltar para login do cuidador"
           >
             <ArrowLeft className="h-5 w-5 stroke-[2.5]" />
           </button>
 
-          <div className="flex items-center gap-2">
-            <Heart className="h-6 w-6 text-emerald-400 stroke-[2.5]" />
-            <span className="text-2xl font-black tracking-wider text-white">
-              CIDA
-            </span>
+          <div className="flex items-center gap-1.5 bg-blue-900/60 border border-blue-400/30 px-3 py-1 rounded-full text-blue-200 text-xs font-bold">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Área de Cuidados</span>
           </div>
         </div>
 
-        <h1 className="text-2xl font-extrabold tracking-tight text-white">
-          Criar sua conta
-        </h1>
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-300">
+            <HeartHandshake className="w-5 h-5 stroke-[2.2]" />
+          </div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-white">
+            Cadastro de Cuidador
+          </h1>
+        </div>
 
-        <p className="text-sm font-medium text-slate-300 mt-0.5">
-          Preencha os campos abaixo para começar
+        <p className="text-sm font-medium text-slate-300 mt-1">
+          Crie seu acesso para monitorar e apoiar a rotina
         </p>
       </header>
 
-      {/* Formulário do Idoso */}
+      {/* Formulário */}
       <main className="flex-1 overflow-y-auto px-6 py-5">
         <form className="space-y-4" onSubmit={handleSubmit}>
           {mensagemErro && (
@@ -165,6 +163,37 @@ export default function Cadastro() {
               <span>{mensagemErro}</span>
             </div>
           )}
+
+          {/* Tipo de Responsável */}
+          <div>
+            <label className="block text-sm font-bold text-slate-800 mb-1.5 ml-1">
+              Perfil de atuação
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setTipoCuidador('caregiver')}
+                className={`py-3 px-3 rounded-2xl font-bold text-xs border-2 transition-all cursor-pointer ${
+                  tipoCuidador === 'caregiver'
+                    ? 'border-blue-600 bg-blue-50 text-blue-900'
+                    : 'border-slate-200 bg-white text-slate-600'
+                }`}
+              >
+                Cuidador Profissional
+              </button>
+              <button
+                type="button"
+                onClick={() => setTipoCuidador('family')}
+                className={`py-3 px-3 rounded-2xl font-bold text-xs border-2 transition-all cursor-pointer ${
+                  tipoCuidador === 'family'
+                    ? 'border-blue-600 bg-blue-50 text-blue-900'
+                    : 'border-slate-200 bg-white text-slate-600'
+                }`}
+              >
+                Familiar / Parente
+              </button>
+            </div>
+          </div>
 
           {/* Nome Completo */}
           <div>
@@ -178,9 +207,9 @@ export default function Cadastro() {
               <input
                 type="text"
                 value={nome}
-                onChange={(event) => setNome(event.target.value)}
-                placeholder="Ex: João da Silva"
-                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 font-bold text-slate-900 outline-none focus:border-emerald-500 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Seu nome completo"
+                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 font-bold text-slate-900 outline-none focus:border-blue-600 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
           </div>
@@ -188,7 +217,7 @@ export default function Cadastro() {
           {/* E-mail */}
           <div>
             <label className="block text-sm font-bold text-slate-800 mb-1.5 ml-1">
-              E-mail
+              E-mail para login
             </label>
             <div className="relative flex items-center">
               <span className="absolute left-4 text-slate-400">
@@ -197,9 +226,9 @@ export default function Cadastro() {
               <input
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="seuemail@exemplo.com"
-                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 font-bold text-slate-900 outline-none focus:border-emerald-500 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
+                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 font-bold text-slate-900 outline-none focus:border-blue-600 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
           </div>
@@ -207,7 +236,7 @@ export default function Cadastro() {
           {/* Telefone */}
           <div>
             <label className="block text-sm font-bold text-slate-800 mb-1.5 ml-1">
-              Telefone ou celular
+              Celular com WhatsApp
             </label>
             <div className="relative flex items-center">
               <span className="absolute left-4 text-slate-400">
@@ -216,30 +245,41 @@ export default function Cadastro() {
               <input
                 type="text"
                 value={telefone}
-                onChange={(event) => setTelefone(event.target.value)}
+                onChange={(e) => setTelefone(e.target.value)}
                 placeholder="(11) 98765-4321"
-                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 font-bold text-slate-900 outline-none focus:border-emerald-500 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
+                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 font-bold text-slate-900 outline-none focus:border-blue-600 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
           </div>
 
-          {/* Data de Nascimento */}
-          <div>
-            <label className="block text-sm font-bold text-slate-800 mb-1.5 ml-1">
-              Data de nascimento
-            </label>
-            <div className="relative flex items-center">
-              <span className="absolute left-4 text-slate-400">
-                <Calendar className="h-5 w-5" />
-              </span>
+          {/* Vínculo ou Especialização */}
+          {tipoCuidador === 'family' ? (
+            <div>
+              <label className="block text-sm font-bold text-slate-800 mb-1.5 ml-1">
+                Grau de parentesco
+              </label>
               <input
-                type="date"
-                value={dataNascimento}
-                onChange={(event) => setDataNascimento(event.target.value)}
-                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 font-bold text-slate-900 outline-none focus:border-emerald-500 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
+                type="text"
+                value={vinculo}
+                onChange={(e) => setVinculo(e.target.value)}
+                placeholder="Ex: Filho(a), Neto(a), Sobrinho(a)"
+                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 font-bold text-slate-900 outline-none focus:border-blue-600 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
-          </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-bold text-slate-800 mb-1.5 ml-1">
+                Especialização ou registro (opcional)
+              </label>
+              <input
+                type="text"
+                value={especializacao}
+                onChange={(e) => setEspecializacao(e.target.value)}
+                placeholder="Ex: Enfermagem, Técnico de Saúde, Cuidador de Idosos"
+                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 font-bold text-slate-900 outline-none focus:border-blue-600 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
+              />
+            </div>
+          )}
 
           {/* Senha */}
           <div>
@@ -253,9 +293,9 @@ export default function Cadastro() {
               <input
                 type={showSenha ? 'text' : 'password'}
                 value={senha}
-                onChange={(event) => setSenha(event.target.value)}
+                onChange={(e) => setSenha(e.target.value)}
                 placeholder="Mínimo de 6 caracteres"
-                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 pr-12 font-bold text-slate-900 outline-none focus:border-emerald-500 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
+                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 pr-12 font-bold text-slate-900 outline-none focus:border-blue-600 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
               />
               <button
                 type="button"
@@ -271,7 +311,7 @@ export default function Cadastro() {
           {/* Confirmar Senha */}
           <div>
             <label className="block text-sm font-bold text-slate-800 mb-1.5 ml-1">
-              Confirmar senha
+              Repita a senha
             </label>
             <div className="relative flex items-center">
               <span className="absolute left-4 text-slate-400">
@@ -280,9 +320,9 @@ export default function Cadastro() {
               <input
                 type={showConfirmarSenha ? 'text' : 'password'}
                 value={confirmarSenha}
-                onChange={(event) => setConfirmarSenha(event.target.value)}
+                onChange={(e) => setConfirmarSenha(e.target.value)}
                 placeholder="Digite a mesma senha"
-                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 pr-12 font-bold text-slate-900 outline-none focus:border-emerald-500 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
+                className="w-full rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 pl-12 pr-12 font-bold text-slate-900 outline-none focus:border-blue-600 text-base shadow-sm placeholder:text-slate-400 placeholder:font-normal"
               />
               <button
                 type="button"
@@ -299,10 +339,10 @@ export default function Cadastro() {
           <button
             type="submit"
             disabled={carregando}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-4 text-base font-extrabold text-white shadow-lg shadow-emerald-700/20 hover:bg-emerald-700 active:scale-[0.98] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#15284B] px-6 py-4 text-base font-extrabold text-white shadow-lg hover:bg-[#1e3b6e] active:scale-[0.98] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
           >
             <span>
-              {carregando ? 'Cadastrando...' : 'Concluir cadastro'}
+              {carregando ? 'Criando conta...' : 'Concluir cadastro de cuidador'}
             </span>
             {!carregando && <ArrowRight className="h-5 w-5 stroke-[2.5]" />}
           </button>
@@ -312,14 +352,14 @@ export default function Cadastro() {
       {/* Rodapé */}
       <footer className="shrink-0 border-t border-slate-200/80 bg-slate-50/80 p-4 text-center">
         <span className="text-xs font-medium text-slate-600">
-          Já tem uma conta cadastrada?{' '}
+          Já tem conta de cuidador?{' '}
         </span>
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/login-cuidador')}
           className="text-xs font-bold text-blue-700 hover:text-blue-800 underline cursor-pointer p-1"
         >
-          Entrar agora
+          Entrar aqui
         </button>
       </footer>
     </MobileContainer>
