@@ -1,14 +1,46 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CheckCircle2, Clock, RotateCcw } from 'lucide-react';
 import MobileContainer from '../components/MobileContainer';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
+import { getAtividadesPorData, concluirDoseNaData, desfazerDoseNaData, formatarDataChave } from '../utils/rotinaStorage';
 
 export default function Rotina() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const dateInputRef = useRef(null);
+  const [atividades, setAtividades] = useState([]);
+
+  // Recarrega as atividades da data selecionada
+  const carregarAtividadesDia = () => {
+    setAtividades(getAtividadesPorData(currentDate));
+  };
+
+  useEffect(() => {
+    carregarAtividadesDia();
+
+    const handleAtualizacao = () => carregarAtividadesDia();
+    window.addEventListener('rotina_atualizada', handleAtualizacao);
+    window.addEventListener('storage', handleAtualizacao);
+
+    return () => {
+      window.removeEventListener('rotina_atualizada', handleAtualizacao);
+      window.removeEventListener('storage', handleAtualizacao);
+    };
+  }, [currentDate]);
+
+  // Confirmar dose
+  const handleConfirmar = (id) => {
+    concluirDoseNaData(currentDate, id);
+    carregarAtividadesDia();
+  };
+
+  // Desfazer dose confirmada por engano
+  const handleDesfazer = (id) => {
+    desfazerDoseNaData(currentDate, id);
+    carregarAtividadesDia();
+  };
 
   const mudarDia = (dias) => {
     setCurrentDate((prevDate) => {
@@ -18,23 +50,12 @@ export default function Rotina() {
     });
   };
 
-  // Converte objeto Date para 'YYYY-MM-DD'
-  const formatarParaInputDate = (date) => {
-    const ano = date.getFullYear();
-    const mes = String(date.getMonth() + 1).padStart(2, '0');
-    const dia = String(date.getDate()).padStart(2, '0');
-    return `${ano}-${mes}-${dia}`;
-  };
-
-  // Trata a seleção do usuário no calendário
   const handleDateChange = (e) => {
     if (!e.target.value) return;
     const [ano, mes, dia] = e.target.value.split('-').map(Number);
-    // Instancia considerando o horário local
     setCurrentDate(new Date(ano, mes - 1, dia));
   };
 
-  // Aciona o calendário nativo
   const abrirCalendario = () => {
     if (dateInputRef.current) {
       if ('showPicker' in HTMLInputElement.prototype) {
@@ -72,12 +93,14 @@ export default function Rotina() {
     return `${diasSemana[data.getDay()]}, ${dia} de ${mes}`;
   };
 
+  // Descobre o ID da próxima dose pendente imediata
+  const proximaDoseId = atividades.find(item => !item.concluido)?.id;
+
   return (
     <MobileContainer>
-      {/* Área Rolável de Conteúdo */}
       <div className="flex-1 overflow-y-auto">
         
-        {/* Topo Azul Componentizado */}
+        {/* Topo com Header */}
         <Header
           title="Minha Rotina"
           rightAction={
@@ -99,11 +122,10 @@ export default function Rotina() {
           {/* Navegador de Datas Interativo */}
           <div className="relative flex items-center justify-between bg-white/10 backdrop-blur-md rounded-2xl py-2 px-3 border border-white/15 text-white shadow-inner mt-3">
             
-            {/* Input nativo de data invisível mas funcional */}
             <input 
               ref={dateInputRef}
               type="date" 
-              value={formatarParaInputDate(currentDate)}
+              value={formatarDataChave(currentDate)}
               onChange={handleDateChange}
               className="absolute inset-0 opacity-0 pointer-events-none w-full h-full"
               tabIndex={-1}
@@ -119,7 +141,6 @@ export default function Rotina() {
               <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
             </button>
 
-            {/* Botão da Data Central: abre o calendário */}
             <button
               type="button"
               onClick={abrirCalendario}
@@ -143,92 +164,128 @@ export default function Rotina() {
           </div>
         </Header>
 
-        {/* Linha do Tempo e Lista de Cuidados */}
-        <div className="px-5 pt-6 pb-6">
-          <div className="relative border-l-2 border-slate-300 ml-3.5 pl-6 space-y-6">
+        {/* Linha do Tempo Contínua e Lista de Cuidados */}
+        <div className="px-4 pt-6 pb-6">
+          <div className="space-y-4">
             
-            {/* Item 1: 08:00 - Tomado */}
-            <div className="relative">
-              <div className="absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-4 ring-slate-100"></div>
+            {atividades.map((item, index) => {
+              const estaTomado = item.concluido;
+              const ehProximaDose = item.id === proximaDoseId;
+              const isUltimo = index === atividades.length - 1;
 
-              <div className="bg-white rounded-2xl p-4 border-2 border-emerald-400 shadow-sm">
-                <div className="flex justify-between items-start mb-1.5">
-                  <span className="text-xs font-black text-slate-900">08:00</span>
-                  <span className="bg-emerald-100 text-emerald-700 font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    Tomado
-                  </span>
+              const corLinha = estaTomado 
+                ? 'bg-emerald-400' 
+                : ehProximaDose 
+                  ? 'bg-amber-400' 
+                  : 'bg-slate-200';
+
+              const corBolinha = estaTomado 
+                ? 'bg-emerald-500' 
+                : ehProximaDose 
+                  ? 'bg-amber-500' 
+                  : 'bg-slate-300';
+
+              return (
+                <div key={item.id} className="relative pl-6">
+                  
+                  {/* Linha vertical que acompanha o card até o próximo */}
+                  <div 
+                    className={`absolute left-[6px] top-4 ${
+                      isUltimo ? 'bottom-4' : 'bottom-[-16px]'
+                    } w-0.5 ${corLinha} transition-colors`}
+                  />
+
+                  {/* Marcador (Bolinha) */}
+                  <div 
+                    className={`absolute left-0 top-3.5 w-3.5 h-3.5 rounded-full ring-4 ring-slate-100 z-10 ${corBolinha} transition-colors`}
+                  />
+
+                  {/* Card da Atividade */}
+                  <div 
+                    className={`bg-white rounded-2xl p-4 transition-all ${
+                      estaTomado 
+                        ? 'border-2 border-emerald-400 bg-emerald-50/15 shadow-sm' 
+                        : ehProximaDose 
+                          ? 'border-2 border-amber-400 shadow-md ring-2 ring-amber-400/20' 
+                          : 'border border-slate-200 shadow-xs opacity-90'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-1.5">
+                      <span className="text-xs font-black text-slate-900">{item.horario}</span>
+                      
+                      <span 
+                        className={`font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                          estaTomado 
+                            ? 'bg-emerald-100 text-emerald-700' 
+                            : ehProximaDose 
+                              ? 'bg-amber-100 text-amber-800' 
+                              : 'bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        {estaTomado 
+                          ? 'Tomado' 
+                          : ehProximaDose 
+                            ? 'Próxima Dose' 
+                            : 'Pendente'}
+                      </span>
+                    </div>
+
+                    <h3 className="text-sm font-extrabold text-slate-900 leading-snug">
+                      {item.titulo}
+                    </h3>
+                    
+                    <p className="text-xs text-slate-500 font-medium mt-0.5 mb-3.5">
+                      {item.detalhe}
+                    </p>
+
+                    {/* Ações: Tomado (com Desfazer) vs Pendentes */}
+                    {estaTomado ? (
+                      <div className="flex items-center justify-between pt-1 border-t border-emerald-100/60">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
+                          <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+                          <span>Dose concluída</span>
+                        </div>
+                        
+                        {/* BOTÃO DESFAZER */}
+                        <button
+                          type="button"
+                          onClick={() => handleDesfazer(item.id)}
+                          className="flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg cursor-pointer active:scale-95 transition-all"
+                          title="Clique caso tenha marcado por engano"
+                        >
+                          <RotateCcw className="w-3 h-3 text-slate-400" />
+                          <span>Desfazer</span>
+                        </button>
+                      </div>
+                    ) : ehProximaDose ? (
+                      <button 
+                        type="button" 
+                        onClick={() => handleConfirmar(item.id)}
+                        className="w-full bg-[#FA8C16] hover:bg-[#d97706] active:scale-[0.98] transition-all text-white font-bold text-xs py-3 px-4 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+                        <span>Confirmar Realizado</span>
+                      </button>
+                    ) : (
+                      <button 
+                        type="button" 
+                        onClick={() => handleConfirmar(item.id)}
+                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Clock className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Confirmar Antecipado</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <h3 className="text-sm font-extrabold text-slate-900 leading-snug">
-                  Café da manhã e Insulina
-                </h3>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
-                  Aplicar 10 unidades antes de comer.
-                </p>
-              </div>
-            </div>
-
-            {/* Item 2: 10:00 - Pendente */}
-            <div className="relative">
-              <div className="absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full bg-amber-500 ring-4 ring-slate-100"></div>
-
-              <div className="bg-white rounded-2xl p-4 border-2 border-amber-300 shadow-sm">
-                <div className="flex justify-between items-start mb-1.5">
-                  <span className="text-xs font-black text-slate-900">10:00</span>
-                  <span className="bg-amber-100 text-amber-700 font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    Pendente
-                  </span>
-                </div>
-                <h3 className="text-sm font-extrabold text-slate-900 leading-snug">
-                  Losartana 50mg
-                </h3>
-                <p className="text-xs text-slate-500 font-medium mt-0.5 mb-3.5">
-                  Tomar com um copo cheio de água.
-                </p>
-                
-                <button 
-                  type="button" 
-                  onClick={() => alert("Dose confirmada!")}
-                  className="w-full bg-[#FA8C16] hover:bg-[#d97706] active:scale-[0.98] transition-all text-white font-bold text-xs py-3 px-4 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  Confirmar Realizado
-                </button>
-              </div>
-            </div>
-
-            {/* Item 3: 13:00 - Pendente */}
-            <div className="relative">
-              <div className="absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full bg-slate-400 ring-4 ring-slate-100"></div>
-
-              <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-                <div className="flex justify-between items-start mb-1.5">
-                  <span className="text-xs font-black text-slate-900">13:00</span>
-                  <span className="bg-slate-100 text-slate-600 font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    Pendente
-                  </span>
-                </div>
-                <h3 className="text-sm font-extrabold text-slate-900 leading-snug">
-                  Almoço saudável
-                </h3>
-                <p className="text-xs text-slate-500 font-medium mt-0.5 mb-3.5">
-                  Evitar alimentos com muito sal.
-                </p>
-                
-                <button 
-                  type="button" 
-                  onClick={() => alert("Almoço confirmado!")}
-                  className="w-full bg-[#15284B] hover:bg-[#1f3a6d] active:scale-[0.98] transition-all text-white font-bold text-xs py-3 px-4 rounded-xl shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  Confirmar Realizado
-                </button>
-              </div>
-            </div>
+              );
+            })}
 
           </div>
         </div>
 
       </div>
 
-      {/* Footer Componentizado */}
       <BottomNav />
     </MobileContainer>
   );
