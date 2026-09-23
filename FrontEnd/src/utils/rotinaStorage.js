@@ -1,6 +1,6 @@
-const STORAGE_KEY = 'cida_rotina_calendario';
+const STORAGE_KEY = 'cida_rotina_calendario_v2';
 
-// Utilitário para formatar qualquer Date em 'YYYY-MM-DD'
+// Formatar data em YYYY-MM-DD
 export function formatarDataChave(date) {
   const d = new Date(date);
   const ano = d.getFullYear();
@@ -9,108 +9,159 @@ export function formatarDataChave(date) {
   return `${ano}-${mes}-${dia}`;
 }
 
-// Modelo de rotina diária padrão
-const rotinaPadrao = [
+// Rotina inicial padrão para o Seu João (idoso-1)
+const rotinaInicialJoao = [
   {
-    id: 1,
+    id: 'joao-1',
     horario: '08:00',
     titulo: 'Café da manhã e Insulina',
     detalhe: 'Aplicar 10 unidades antes de comer.',
     tipo: 'remedio',
-    concluido: false,
+    concluido: true,
   },
   {
-    id: 2,
+    id: 'joao-2',
     horario: '10:00',
-    titulo: 'Losartana 50mg',
-    detalhe: 'Tomar com um copo cheio de água.',
+    titulo: 'Losartana Potássica 50mg',
+    detalhe: 'Tomar com água',
     tipo: 'remedio',
-    concluido: false,
+    concluido: true,
   },
   {
-    id: 3,
-    horario: '13:00',
-    titulo: 'Almoço saudável',
-    detalhe: 'Evitar alimentos com muito sal.',
-    tipo: 'refeicao',
-    concluido: false,
-  },
-  {
-    id: 4,
-    horario: '20:00',
-    titulo: 'Sinvastatina 20mg',
-    detalhe: 'Tomar antes de dormir.',
+    id: 'joao-3',
+    horario: '14:00',
+    titulo: 'Metformina 850mg',
+    detalhe: 'Após o almoço',
     tipo: 'remedio',
     concluido: false,
   }
 ];
 
-function getMapaRotinas() {
-  const dados = localStorage.getItem(STORAGE_KEY);
-  if (!dados) {
+// Rotina inicial para a Dona Maria (idoso-2)
+const rotinaInicialMaria = [
+  {
+    id: 'maria-1',
+    horario: '09:00',
+    titulo: 'Cálcio + Vitamina D',
+    detalhe: 'Tomar junto com suco',
+    tipo: 'remedio',
+    concluido: true,
+  },
+  {
+    id: 'maria-2',
+    horario: '15:30',
+    titulo: 'Fisioterapia Domiciliar',
+    detalhe: 'Exercícios de marcha e postura',
+    tipo: 'lembrete',
+    concluido: false,
+  }
+];
+
+function getBancoCompleto() {
+  const salvo = localStorage.getItem(STORAGE_KEY);
+  if (!salvo) {
     const hojeChave = formatarDataChave(new Date());
-    const inicial = {
-      [hojeChave]: [
-        { ...rotinaPadrao[0], concluido: true },
-        rotinaPadrao[1],
-        rotinaPadrao[2],
-        rotinaPadrao[3],
-      ]
+    const bancoInicial = {
+      'idoso-1': {
+        [hojeChave]: rotinaInicialJoao
+      },
+      'idoso-2': {
+        [hojeChave]: rotinaInicialMaria
+      }
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(inicial));
-    return inicial;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(bancoInicial));
+    return bancoInicial;
   }
-  return JSON.parse(dados);
+  return JSON.parse(salvo);
 }
 
-export function getAtividadesPorData(dataObj) {
-  const chave = formatarDataChave(dataObj);
-  const mapa = getMapaRotinas();
-
-  if (!mapa[chave]) {
-    mapa[chave] = rotinaPadrao.map(item => ({ ...item, id: `${chave}-${item.id}` }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mapa));
-  }
-
-  return mapa[chave];
+function salvarBanco(banco) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
+  window.dispatchEvent(new Event('rotina_atualizada'));
 }
 
-// Marca dose como concluída
-export function concluirDoseNaData(dataObj, id) {
-  const chave = formatarDataChave(dataObj);
-  const mapa = getMapaRotinas();
+// Busca atividades de um idoso em uma data específica
+export function getAtividadesPorIdosoEData(idosoId = 'idoso-1', dataObj = new Date()) {
+  const chaveData = formatarDataChave(dataObj);
+  const banco = getBancoCompleto();
 
-  if (mapa[chave]) {
-    mapa[chave] = mapa[chave].map(item => 
+  if (!banco[idosoId]) {
+    banco[idosoId] = {};
+  }
+
+  if (!banco[idosoId][chaveData]) {
+    // Clona o modelo do idoso para dias novos
+    const base = idosoId === 'idoso-2' ? rotinaInicialMaria : rotinaInicialJoao;
+    banco[idosoId][chaveData] = base.map((item, idx) => ({
+      ...item,
+      id: `${idosoId}-${chaveData}-${idx}`,
+      concluido: false
+    }));
+    salvarBanco(banco);
+  }
+
+  return [...banco[idosoId][chaveData]].sort((a, b) => a.horario.localeCompare(b.horario));
+}
+
+// Atalho compatível com a tela de Rotina do Seu João
+export function getAtividadesPorData(dataObj = new Date()) {
+  return getAtividadesPorIdosoEData('idoso-1', dataObj);
+}
+
+// Adiciona uma nova atividade/remédio
+export function adicionarAtividade(idosoId = 'idoso-1', novaAtividade, dataObj = new Date()) {
+  const chaveData = formatarDataChave(dataObj);
+  const banco = getBancoCompleto();
+
+  if (!banco[idosoId]) banco[idosoId] = {};
+  if (!banco[idosoId][chaveData]) banco[idosoId][chaveData] = [];
+
+  const item = {
+    id: Date.now().toString(),
+    horario: novaAtividade.horario,
+    titulo: novaAtividade.titulo,
+    detalhe: novaAtividade.detalhe,
+    tipo: novaAtividade.tipo || 'remedio',
+    concluido: false
+  };
+
+  banco[idosoId][chaveData].push(item);
+  banco[idosoId][chaveData].sort((a, b) => a.horario.localeCompare(b.horario));
+  salvarBanco(banco);
+}
+
+// Conclui uma dose
+export function concluirDoseNaData(dataObj = new Date(), id, idosoId = 'idoso-1') {
+  const chaveData = formatarDataChave(dataObj);
+  const banco = getBancoCompleto();
+
+  if (banco[idosoId]?.[chaveData]) {
+    banco[idosoId][chaveData] = banco[idosoId][chaveData].map(item => 
       item.id === id ? { ...item, concluido: true } : item
     );
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mapa));
-    window.dispatchEvent(new Event('rotina_atualizada'));
+    salvarBanco(banco);
   }
 }
 
-// Desfaz a conclusão da dose (volta para pendente)
-export function desfazerDoseNaData(dataObj, id) {
-  const chave = formatarDataChave(dataObj);
-  const mapa = getMapaRotinas();
+// Desfaz conclusão de uma dose
+export function desfazerDoseNaData(dataObj = new Date(), id, idosoId = 'idoso-1') {
+  const chaveData = formatarDataChave(dataObj);
+  const banco = getBancoCompleto();
 
-  if (mapa[chave]) {
-    mapa[chave] = mapa[chave].map(item => 
+  if (banco[idosoId]?.[chaveData]) {
+    banco[idosoId][chaveData] = banco[idosoId][chaveData].map(item => 
       item.id === id ? { ...item, concluido: false } : item
     );
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mapa));
-    window.dispatchEvent(new Event('rotina_atualizada'));
+    salvarBanco(banco);
   }
 }
 
-// Para a Home
+// Próxima dose de hoje para a Home (Seu João)
 export function getProximaDoseHoje() {
-  const hoje = new Date();
-  const tarefasHoje = getAtividadesPorData(hoje);
-  const ordenadas = [...tarefasHoje].sort((a, b) => a.horario.localeCompare(b.horario));
-  return ordenadas.find(item => !item.concluido) || null;
+  const tarefasHoje = getAtividadesPorIdosoEData('idoso-1', new Date());
+  return tarefasHoje.find(item => !item.concluido) || null;
 }
 
 export function concluirDoseHoje(id) {
-  concluirDoseNaData(new Date(), id);
+  concluirDoseNaData(new Date(), id, 'idoso-1');
 }

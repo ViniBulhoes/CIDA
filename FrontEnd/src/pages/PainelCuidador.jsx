@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   HeartHandshake, 
@@ -15,11 +15,16 @@ import {
   Check
 } from 'lucide-react';
 import MobileContainer from '../components/MobileContainer';
+import { 
+  getAtividadesPorIdosoEData, 
+  adicionarAtividade, 
+  concluirDoseNaData 
+} from '../utils/rotinaStorage';
 
 export default function PainelCuidador() {
   const navigate = useNavigate();
 
-  // Lista de idosos vinculados a este cuidador
+  // Lista de idosos vinculados ao cuidador
   const [listaIdosos] = useState([
     {
       id: 'idoso-1',
@@ -31,8 +36,8 @@ export default function PainelCuidador() {
     },
     {
       id: 'idoso-2',
-      nome: 'Maria Antônia',
-      idade: 28,
+      nome: 'Dona Maria Antônia',
+      idade: 75,
       foto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&auto=format&fit=crop&q=80',
       telefone: '(11) 97654-3210',
       statusGeral: 'Monitoramento Ativo'
@@ -41,61 +46,32 @@ export default function PainelCuidador() {
 
   // ID do idoso ativo
   const [idosoSelecionadoId, setIdosoSelecionadoId] = useState('idoso-1');
-
-  // Estado para abrir/fechar o modal de seleção de idoso
   const [modalIdososAberto, setModalIdososAberto] = useState(false);
 
-  // Atividades separadas por ID de cada idoso
-  const [atividadesPorIdoso, setAtividadesPorIdoso] = useState({
-    'idoso-1': [
-      {
-        id: 1,
-        horario: '08:00',
-        titulo: 'Café da manhã e Insulina',
-        detalhe: '10 unidades antes da refeição',
-        tipo: 'remedio',
-        status: 'concluido'
-      },
-      {
-        id: 2,
-        horario: '10:00',
-        titulo: 'Losartana Potássica 50mg',
-        detalhe: 'Tomar com água',
-        tipo: 'remedio',
-        status: 'concluido'
-      },
-      {
-        id: 3,
-        horario: '14:00',
-        titulo: 'Metformina 850mg',
-        detalhe: 'Após o almoço',
-        tipo: 'remedio',
-        status: 'pendente'
-      }
-    ],
-    'idoso-2': [
-      {
-        id: 4,
-        horario: '09:00',
-        titulo: 'Cálcio + Vitamina D',
-        detalhe: 'Tomar com suco',
-        tipo: 'remedio',
-        status: 'concluido'
-      },
-      {
-        id: 5,
-        horario: '15:30',
-        titulo: 'Fisioterapia Domiciliar',
-        detalhe: 'Exercícios de marcha e postura',
-        tipo: 'lembrete',
-        status: 'pendente'
-      }
-    ]
-  });
+  // Atividades do idoso ativo carregadas da fonte única de dados
+  const [atividadesHoje, setAtividadesHoje] = useState([]);
 
-  // Dados do idoso ativo atual
+  // Recarrega as atividades do idoso selecionado
+  const carregarAtividades = () => {
+    setAtividadesHoje(getAtividadesPorIdosoEData(idosoSelecionadoId, new Date()));
+  };
+
+  useEffect(() => {
+    carregarAtividades();
+
+    // Ouve alterações globais (ex: quando o idoso marca na Home ou na Rotina)
+    const handleAtualizacao = () => carregarAtividades();
+    window.addEventListener('rotina_atualizada', handleAtualizacao);
+    window.addEventListener('storage', handleAtualizacao);
+
+    return () => {
+      window.removeEventListener('rotina_atualizada', handleAtualizacao);
+      window.removeEventListener('storage', handleAtualizacao);
+    };
+  }, [idosoSelecionadoId]);
+
+  // Idoso ativo atual
   const idosoAtivo = listaIdosos.find(i => i.id === idosoSelecionadoId) || listaIdosos[0];
-  const atividadesHoje = atividadesPorIdoso[idosoAtivo.id] || [];
 
   // Modais de ações rápidas
   const [modalRemedioAberto, setModalRemedioAberto] = useState(false);
@@ -112,69 +88,61 @@ export default function PainelCuidador() {
   const [lembreteHorario, setLembreteHorario] = useState('09:00');
   const [lembreteDetalhe, setLembreteDetalhe] = useState('');
 
-  // Confirmar dose / marcar como concluído
+  // Confirmar dose pelo painel do cuidador
   const marcarComoRealizado = (id) => {
-    setAtividadesPorIdoso(prev => ({
-      ...prev,
-      [idosoAtivo.id]: prev[idosoAtivo.id].map(item => 
-        item.id === id ? { ...item, status: 'concluido' } : item
-      )
-    }));
+    concluirDoseNaData(new Date(), id, idosoAtivo.id);
+    carregarAtividades();
   };
 
-  // Salvar novo remédio
+  // Salvar novo remédio diretamente na rotina compartilhada
   const handleSalvarRemedio = (e) => {
     e.preventDefault();
     if (!remedioNome.trim()) return;
 
-    const novoItem = {
-      id: Date.now(),
-      horario: remedioHorario,
-      titulo: `${remedioNome} ${remedioDosagem}`.trim(),
-      detalhe: remedioInstrucao || 'Conforme orientação médica',
-      tipo: 'remedio',
-      status: 'pendente'
-    };
-
-    setAtividadesPorIdoso(prev => ({
-      ...prev,
-      [idosoAtivo.id]: [...(prev[idosoAtivo.id] || []), novoItem].sort((a, b) => a.horario.localeCompare(b.horario))
-    }));
+    adicionarAtividade(
+      idosoAtivo.id,
+      {
+        horario: remedioHorario,
+        titulo: `${remedioNome} ${remedioDosagem}`.trim(),
+        detalhe: remedioInstrucao || 'Conforme orientação médica',
+        tipo: 'remedio'
+      },
+      new Date()
+    );
 
     setRemedioNome('');
     setRemedioDosagem('');
     setRemedioHorario('08:00');
     setRemedioInstrucao('');
     setModalRemedioAberto(false);
+    carregarAtividades();
   };
 
-  // Salvar novo lembrete
+  // Salvar novo lembrete diretamente na rotina compartilhada
   const handleSalvarLembrete = (e) => {
     e.preventDefault();
     if (!lembreteTitulo.trim()) return;
 
-    const novoItem = {
-      id: Date.now(),
-      horario: lembreteHorario,
-      titulo: lembreteTitulo.trim(),
-      detalhe: lembreteDetalhe || 'Compromisso programado',
-      tipo: 'lembrete',
-      status: 'pendente'
-    };
-
-    setAtividadesPorIdoso(prev => ({
-      ...prev,
-      [idosoAtivo.id]: [...(prev[idosoAtivo.id] || []), novoItem].sort((a, b) => a.horario.localeCompare(b.horario))
-    }));
+    adicionarAtividade(
+      idosoAtivo.id,
+      {
+        horario: lembreteHorario,
+        titulo: lembreteTitulo.trim(),
+        detalhe: lembreteDetalhe || 'Compromisso programado',
+        tipo: 'lembrete'
+      },
+      new Date()
+    );
 
     setLembreteTitulo('');
     setLembreteHorario('09:00');
     setLembreteDetalhe('');
     setModalLembreteAberto(false);
+    carregarAtividades();
   };
 
-  // Contagem dinâmica das tarefas do idoso ativo
-  const dosesConcluidas = atividadesHoje.filter(a => a.status === 'concluido').length;
+  // Contagem dinâmica das tarefas
+  const dosesConcluidas = atividadesHoje.filter(a => a.concluido).length;
   const totalDoses = atividadesHoje.length;
 
   return (
@@ -185,7 +153,7 @@ export default function PainelCuidador() {
         <header className="shrink-0 rounded-b-[36px] bg-[#15284B] px-6 pb-6 pt-8 shadow-md">
           <div className="mb-4 flex items-center justify-between">
             
-            {/* ÍCONE DO CANTO SUPERIOR ESQUERDO: Botão que abre o seletor de idosos */}
+            {/* Botão que abre o seletor de idosos */}
             <button
               type="button"
               onClick={() => setModalIdososAberto(true)}
@@ -214,7 +182,7 @@ export default function PainelCuidador() {
             </button>
           </div>
 
-          {/* Card do Idoso Selecionado (ao clicar nele também abre o seletor) */}
+          {/* Card do Idoso Selecionado */}
           <div 
             onClick={() => setModalIdososAberto(true)}
             className="bg-white/10 border border-white/15 rounded-3xl p-4 text-white backdrop-blur-sm cursor-pointer hover:bg-white/[0.14] transition-all"
@@ -291,7 +259,7 @@ export default function PainelCuidador() {
             </div>
           </div>
 
-          {/* Acompanhamento do Dia */}
+          {/* Acompanhamento do Dia Sincronizado */}
           <div>
             <div className="flex justify-between items-center mb-3 px-1">
               <div>
@@ -305,7 +273,7 @@ export default function PainelCuidador() {
 
             {atividadesHoje.length === 0 ? (
               <div className="bg-white rounded-2xl p-6 border border-slate-200 text-center">
-                <p className="text-xs font-bold text-slate-500">Nenhuma atividade agendada para este idoso.</p>
+                <p className="text-xs font-bold text-slate-500">Nenhuma atividade agendada para hoje.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -313,7 +281,7 @@ export default function PainelCuidador() {
                   <div 
                     key={item.id}
                     className={`bg-white rounded-2xl p-4 border transition-all ${
-                      item.status === 'concluido' 
+                      item.concluido 
                         ? 'border-emerald-200 shadow-sm bg-emerald-50/20' 
                         : 'border-slate-200 shadow-sm'
                     }`}
@@ -321,7 +289,7 @@ export default function PainelCuidador() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex gap-3">
                         <div className="pt-0.5">
-                          {item.status === 'concluido' ? (
+                          {item.concluido ? (
                             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                           ) : (
                             <Clock className="w-5 h-5 text-amber-500" />
@@ -331,11 +299,11 @@ export default function PainelCuidador() {
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-extrabold text-slate-900">{item.horario}</span>
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                              item.status === 'concluido' 
+                              item.concluido 
                                 ? 'bg-emerald-100 text-emerald-700' 
                                 : 'bg-amber-100 text-amber-700'
                             }`}>
-                              {item.status === 'concluido' ? 'Concluído' : 'Pendente'}
+                              {item.concluido ? 'Concluído' : 'Pendente'}
                             </span>
                           </div>
                           <h4 className="text-sm font-bold text-slate-800 mt-1">{item.titulo}</h4>
@@ -343,7 +311,7 @@ export default function PainelCuidador() {
                         </div>
                       </div>
 
-                      {item.status === 'pendente' && (
+                      {!item.concluido && (
                         <button
                           type="button"
                           onClick={() => marcarComoRealizado(item.id)}
@@ -361,13 +329,10 @@ export default function PainelCuidador() {
 
         </main>
 
-        {/* ========================================================================= */}
-        {/* MODAL DE SELEÇÃO DE IDOSO (TELA CHEIA TOTALMENTE NO TOM DE AZUL #15284B) */}
-        {/* ========================================================================= */}
+        {/* Modal de Seleção de Idoso */}
         {modalIdososAberto && (
           <div className="absolute inset-0 z-50 bg-[#15284B] flex flex-col p-6 animate-in fade-in duration-200 overflow-y-auto">
             
-            {/* Topo do Modal */}
             <div className="flex items-center justify-between pb-4 border-b border-white/10 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-blue-300">
@@ -389,7 +354,6 @@ export default function PainelCuidador() {
               </button>
             </div>
 
-            {/* Lista dos Idosos Cadastrados */}
             <div className="flex-1 py-5 space-y-3.5">
               <span className="text-xs font-extrabold uppercase tracking-wider text-blue-200 block px-1">
                 Idosos sob seus cuidados ({listaIdosos.length})
@@ -397,8 +361,8 @@ export default function PainelCuidador() {
 
               {listaIdosos.map((idoso) => {
                 const isSelected = idoso.id === idosoAtivo.id;
-                const tarefasIdoso = atividadesPorIdoso[idoso.id] || [];
-                const feitas = tarefasIdoso.filter(t => t.status === 'concluido').length;
+                const tarefasIdoso = getAtividadesPorIdosoEData(idoso.id, new Date());
+                const feitas = tarefasIdoso.filter(t => t.concluido).length;
                 const total = tarefasIdoso.length;
 
                 return (
@@ -452,14 +416,13 @@ export default function PainelCuidador() {
               })}
             </div>
 
-            {/* Rodapé Informativo */}
             <footer className="pt-2 text-center text-xs text-blue-300/80 shrink-0">
               Toque no idoso para carregar sua rotina e remédios.
             </footer>
           </div>
         )}
 
-        {/* MODAL 1: NOVO REMÉDIO */}
+        {/* Modal 1: Novo Remédio */}
         {modalRemedioAberto && (
           <div className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
             <div className="bg-white w-full rounded-t-[32px] sm:rounded-[32px] p-6 shadow-2xl border border-slate-200 animate-in fade-in slide-in-from-bottom duration-200">
@@ -561,7 +524,7 @@ export default function PainelCuidador() {
           </div>
         )}
 
-        {/* MODAL 2: NOVO LEMBRETE / COMPROMISSO */}
+        {/* Modal 2: Novo Lembrete */}
         {modalLembreteAberto && (
           <div className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
             <div className="bg-white w-full rounded-t-[32px] sm:rounded-[32px] p-6 shadow-2xl border border-slate-200 animate-in fade-in slide-in-from-bottom duration-200">
