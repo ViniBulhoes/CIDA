@@ -93,8 +93,11 @@ export default function Rotina() {
     return `${diasSemana[data.getDay()]}, ${dia} de ${mes}`;
   };
 
-  // Descobre o ID da próxima dose pendente imediata
-  const proximaDoseId = atividades.find(item => !item.concluido)?.id;
+  // Verifica se a data que está sendo visualizada é EXATAMENTE o dia de HOJE
+  const ehHoje = currentDate.toDateString() === new Date().toDateString();
+
+  // Só calcula "próxima dose" imediata se a tela estiver no dia de HOJE
+  const proximaDoseId = ehHoje ? atividades.find(item => !item.concluido)?.id : null;
 
   return (
     <MobileContainer>
@@ -164,15 +167,19 @@ export default function Rotina() {
           </div>
         </Header>
 
-        {/* Linha do Tempo Contínua e Lista de Cuidados */}
+        {/* Linha do Tempo e Lista de Cuidados */}
         <div className="px-4 pt-6 pb-6">
           <div className="space-y-4">
             
             {atividades.map((item, index) => {
               const estaTomado = item.concluido;
-              const ehProximaDose = item.id === proximaDoseId;
+              const ehProximaDose = ehHoje && item.id === proximaDoseId;
               const isUltimo = index === atividades.length - 1;
 
+              // Cores dinâmicas:
+              // Verde: Concluído
+              // Âmbar: Próxima dose imediata (APENAS SE FOR HOJE)
+              // Cinza: Todos os outros pendentes de hoje ou dos dias futuros
               const corLinha = estaTomado 
                 ? 'bg-emerald-400' 
                 : ehProximaDose 
@@ -188,7 +195,7 @@ export default function Rotina() {
               return (
                 <div key={item.id} className="relative pl-6">
                   
-                  {/* Linha vertical que acompanha o card até o próximo */}
+                  {/* Linha vertical */}
                   <div 
                     className={`absolute left-[6px] top-4 ${
                       isUltimo ? 'bottom-4' : 'bottom-[-16px]'
@@ -246,7 +253,6 @@ export default function Rotina() {
                           <span>Dose concluída</span>
                         </div>
                         
-                        {/* BOTÃO DESFAZER */}
                         <button
                           type="button"
                           onClick={() => handleDesfazer(item.id)}

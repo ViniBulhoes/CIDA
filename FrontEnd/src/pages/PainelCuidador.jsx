@@ -10,15 +10,18 @@ import {
   Calendar, 
   UserCheck, 
   X, 
-  Plus,
-  ChevronDown,
-  Check
+  Plus, 
+  ChevronDown, 
+  Check, 
+  Trash2 
 } from 'lucide-react';
 import MobileContainer from '../components/MobileContainer';
 import { 
   getAtividadesPorIdosoEData, 
   adicionarAtividade, 
-  concluirDoseNaData 
+  concluirDoseNaData,
+  removerAtividade,
+  formatarDataChave
 } from '../utils/rotinaStorage';
 
 export default function PainelCuidador() {
@@ -48,10 +51,10 @@ export default function PainelCuidador() {
   const [idosoSelecionadoId, setIdosoSelecionadoId] = useState('idoso-1');
   const [modalIdososAberto, setModalIdososAberto] = useState(false);
 
-  // Atividades do idoso ativo carregadas da fonte única de dados
+  // Atividades do idoso ativo
   const [atividadesHoje, setAtividadesHoje] = useState([]);
 
-  // Recarrega as atividades do idoso selecionado
+  // Recarrega atividades
   const carregarAtividades = () => {
     setAtividadesHoje(getAtividadesPorIdosoEData(idosoSelecionadoId, new Date()));
   };
@@ -59,7 +62,6 @@ export default function PainelCuidador() {
   useEffect(() => {
     carregarAtividades();
 
-    // Ouve alterações globais (ex: quando o idoso marca na Home ou na Rotina)
     const handleAtualizacao = () => carregarAtividades();
     window.addEventListener('rotina_atualizada', handleAtualizacao);
     window.addEventListener('storage', handleAtualizacao);
@@ -70,7 +72,6 @@ export default function PainelCuidador() {
     };
   }, [idosoSelecionadoId]);
 
-  // Idoso ativo atual
   const idosoAtivo = listaIdosos.find(i => i.id === idosoSelecionadoId) || listaIdosos[0];
 
   // Modais de ações rápidas
@@ -82,22 +83,36 @@ export default function PainelCuidador() {
   const [remedioDosagem, setRemedioDosagem] = useState('');
   const [remedioHorario, setRemedioHorario] = useState('08:00');
   const [remedioInstrucao, setRemedioInstrucao] = useState('');
+  const [periodoDias, setPeriodoDias] = useState('1'); // '1' por padrão (apenas hoje)
+  const [diasCustomizados, setDiasCustomizados] = useState('7');
 
   // Campos do formulário de lembrete
   const [lembreteTitulo, setLembreteTitulo] = useState('');
   const [lembreteHorario, setLembreteHorario] = useState('09:00');
   const [lembreteDetalhe, setLembreteDetalhe] = useState('');
+  const [lembreteTipoDia, setLembreteTipoDia] = useState('hoje'); // 'hoje' por padrão
+  const [lembreteDataCustom, setLembreteDataCustom] = useState(formatarDataChave(new Date()));
 
-  // Confirmar dose pelo painel do cuidador
+  // Marcar como realizado
   const marcarComoRealizado = (id) => {
     concluirDoseNaData(new Date(), id, idosoAtivo.id);
     carregarAtividades();
   };
 
-  // Salvar novo remédio diretamente na rotina compartilhada
+  // Excluir atividade
+  const handleExcluirAtividade = (id, titulo) => {
+    if (window.confirm(`Deseja realmente apagar "${titulo}" da rotina de ${idosoAtivo.nome.split(' ')[0]}?`)) {
+      removerAtividade(idosoAtivo.id, id, new Date());
+      carregarAtividades();
+    }
+  };
+
+  // Salvar novo remédio com período configurado
   const handleSalvarRemedio = (e) => {
     e.preventDefault();
     if (!remedioNome.trim()) return;
+
+    const totalDias = periodoDias === 'custom' ? parseInt(diasCustomizados, 10) || 1 : parseInt(periodoDias, 10);
 
     adicionarAtividade(
       idosoAtivo.id,
@@ -107,21 +122,32 @@ export default function PainelCuidador() {
         detalhe: remedioInstrucao || 'Conforme orientação médica',
         tipo: 'remedio'
       },
-      new Date()
+      new Date(),
+      totalDias
     );
 
     setRemedioNome('');
     setRemedioDosagem('');
     setRemedioHorario('08:00');
     setRemedioInstrucao('');
+    setPeriodoDias('1');
+    setDiasCustomizados('7');
     setModalRemedioAberto(false);
     carregarAtividades();
   };
 
-  // Salvar novo lembrete diretamente na rotina compartilhada
+  // Salvar novo lembrete com escolha do dia
   const handleSalvarLembrete = (e) => {
     e.preventDefault();
     if (!lembreteTitulo.trim()) return;
+
+    let dataAlvo = new Date();
+    if (lembreteTipoDia === 'amanha') {
+      dataAlvo.setDate(dataAlvo.getDate() + 1);
+    } else if (lembreteTipoDia === 'custom') {
+      const [ano, mes, dia] = lembreteDataCustom.split('-').map(Number);
+      dataAlvo = new Date(ano, mes - 1, dia);
+    }
 
     adicionarAtividade(
       idosoAtivo.id,
@@ -131,17 +157,19 @@ export default function PainelCuidador() {
         detalhe: lembreteDetalhe || 'Compromisso programado',
         tipo: 'lembrete'
       },
-      new Date()
+      dataAlvo,
+      1
     );
 
     setLembreteTitulo('');
     setLembreteHorario('09:00');
     setLembreteDetalhe('');
+    setLembreteTipoDia('hoje');
+    setLembreteDataCustom(formatarDataChave(new Date()));
     setModalLembreteAberto(false);
     carregarAtividades();
   };
 
-  // Contagem dinâmica das tarefas
   const dosesConcluidas = atividadesHoje.filter(a => a.concluido).length;
   const totalDoses = atividadesHoje.length;
 
@@ -153,7 +181,6 @@ export default function PainelCuidador() {
         <header className="shrink-0 rounded-b-[36px] bg-[#15284B] px-6 pb-6 pt-8 shadow-md">
           <div className="mb-4 flex items-center justify-between">
             
-            {/* Botão que abre o seletor de idosos */}
             <button
               type="button"
               onClick={() => setModalIdososAberto(true)}
@@ -171,7 +198,6 @@ export default function PainelCuidador() {
               </div>
             </button>
 
-            {/* Botão Sair */}
             <button
               type="button"
               onClick={() => navigate('/login-cuidador')}
@@ -259,7 +285,7 @@ export default function PainelCuidador() {
             </div>
           </div>
 
-          {/* Acompanhamento do Dia Sincronizado */}
+          {/* Acompanhamento do Dia com Opção de Apagar */}
           <div>
             <div className="flex justify-between items-center mb-3 px-1">
               <div>
@@ -311,15 +337,26 @@ export default function PainelCuidador() {
                         </div>
                       </div>
 
-                      {!item.concluido && (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {!item.concluido && (
+                          <button
+                            type="button"
+                            onClick={() => marcarComoRealizado(item.id)}
+                            className="text-[11px] font-bold bg-[#15284B] hover:bg-[#1e3b6e] text-white px-3 py-1.5 rounded-xl cursor-pointer active:scale-95 transition-transform"
+                          >
+                            Confirmar
+                          </button>
+                        )}
+
                         <button
                           type="button"
-                          onClick={() => marcarComoRealizado(item.id)}
-                          className="text-[11px] font-bold bg-[#15284B] hover:bg-[#1e3b6e] text-white px-3 py-1.5 rounded-xl cursor-pointer active:scale-95 transition-transform shrink-0"
+                          onClick={() => handleExcluirAtividade(item.id, item.titulo)}
+                          title="Apagar remédio/tarefa"
+                          className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-500 flex items-center justify-center active:scale-90 transition-all cursor-pointer"
                         >
-                          Confirmar
+                          <Trash2 className="w-4 h-4" />
                         </button>
-                      )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -422,10 +459,10 @@ export default function PainelCuidador() {
           </div>
         )}
 
-        {/* Modal 1: Novo Remédio */}
+        {/* MODAL 1: NOVO REMÉDIO */}
         {modalRemedioAberto && (
           <div className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div className="bg-white w-full rounded-t-[32px] sm:rounded-[32px] p-6 shadow-2xl border border-slate-200 animate-in fade-in slide-in-from-bottom duration-200">
+            <div className="bg-white w-full max-h-[90vh] overflow-y-auto rounded-t-[32px] sm:rounded-[32px] p-6 shadow-2xl border border-slate-200 animate-in fade-in slide-in-from-bottom duration-200">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
@@ -490,6 +527,50 @@ export default function PainelCuidador() {
                   </div>
                 </div>
 
+                {/* Período do tratamento */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5 ml-1">
+                    Duração do Tratamento
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: '1', label: 'Apenas Hoje' },
+                      { id: '7', label: '7 Dias' },
+                      { id: '14', label: '14 Dias' },
+                      { id: '30', label: '30 Dias' },
+                      { id: 'custom', label: 'Outro' },
+                    ].map(opt => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setPeriodoDias(opt.id)}
+                        className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer text-center ${
+                          periodoDias === opt.id
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {periodoDias === 'custom' && (
+                    <div className="mt-2.5 flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-600">Por quantos dias?</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="365"
+                        value={diasCustomizados}
+                        onChange={(e) => setDiasCustomizados(e.target.value)}
+                        className="w-24 bg-slate-50 text-slate-900 font-bold px-3 py-1.5 rounded-xl border-2 border-slate-200 focus:border-blue-600 focus:outline-none text-sm text-center"
+                      />
+                      <span className="text-xs text-slate-500 font-semibold">dias</span>
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1 ml-1">
                     Instruções especiais
@@ -524,10 +605,10 @@ export default function PainelCuidador() {
           </div>
         )}
 
-        {/* Modal 2: Novo Lembrete */}
+        {/* MODAL 2: NOVO LEMBRETE */}
         {modalLembreteAberto && (
           <div className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div className="bg-white w-full rounded-t-[32px] sm:rounded-[32px] p-6 shadow-2xl border border-slate-200 animate-in fade-in slide-in-from-bottom duration-200">
+            <div className="bg-white w-full max-h-[90vh] overflow-y-auto rounded-t-[32px] sm:rounded-[32px] p-6 shadow-2xl border border-slate-200 animate-in fade-in slide-in-from-bottom duration-200">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
@@ -564,16 +645,74 @@ export default function PainelCuidador() {
                   />
                 </div>
 
+                {/* Grid com Alturas Perfeitamente Igualadas (h-11 nos inputs e botões) */}
+                <div className="grid grid-cols-2 gap-2.5 items-end">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1 ml-1">
+                      Horário Programado
+                    </label>
+                    <input
+                      type="time"
+                      required
+                      value={lembreteHorario}
+                      onChange={(e) => setLembreteHorario(e.target.value)}
+                      className="w-full h-11 bg-slate-50 text-slate-900 font-bold px-4 rounded-2xl border-2 border-slate-200 focus:border-amber-500 focus:bg-white focus:outline-none text-sm cursor-pointer"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1 ml-1">
+                      Para qual dia?
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5 h-11">
+                      <button
+                        type="button"
+                        onClick={() => setLembreteTipoDia('hoje')}
+                        className={`h-full rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center ${
+                          lembreteTipoDia === 'hoje'
+                            ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        Hoje
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLembreteTipoDia('amanha')}
+                        className={`h-full rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center ${
+                          lembreteTipoDia === 'amanha'
+                            ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        Amanhã
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Opção de data personalizada */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1 ml-1">
-                    Horário Programado
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5 ml-1">
+                    <span className="text-xs font-bold text-slate-800">Ou escolha outra data:</span>
+                    {lembreteTipoDia === 'custom' && (
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
+                        Data Selecionada
+                      </span>
+                    )}
+                  </div>
                   <input
-                    type="time"
-                    required
-                    value={lembreteHorario}
-                    onChange={(e) => setLembreteHorario(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 font-bold px-4 py-3 rounded-2xl border-2 border-slate-200 focus:border-amber-500 focus:bg-white focus:outline-none text-sm cursor-pointer"
+                    type="date"
+                    value={lembreteDataCustom}
+                    onChange={(e) => {
+                      setLembreteDataCustom(e.target.value);
+                      setLembreteTipoDia('custom');
+                    }}
+                    className={`w-full bg-slate-50 text-slate-900 font-bold px-4 py-2.5 rounded-2xl border-2 text-sm cursor-pointer transition-colors ${
+                      lembreteTipoDia === 'custom'
+                        ? 'border-amber-500 bg-white ring-2 ring-amber-400/20'
+                        : 'border-slate-200 focus:border-amber-500'
+                    }`}
                   />
                 </div>
 

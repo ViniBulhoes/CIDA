@@ -80,7 +80,7 @@ function salvarBanco(banco) {
   window.dispatchEvent(new Event('rotina_atualizada'));
 }
 
-// Busca atividades de um idoso em uma data específica
+// Busca atividades de um idoso em uma data
 export function getAtividadesPorIdosoEData(idosoId = 'idoso-1', dataObj = new Date()) {
   const chaveData = formatarDataChave(dataObj);
   const banco = getBancoCompleto();
@@ -90,7 +90,6 @@ export function getAtividadesPorIdosoEData(idosoId = 'idoso-1', dataObj = new Da
   }
 
   if (!banco[idosoId][chaveData]) {
-    // Clona o modelo do idoso para dias novos
     const base = idosoId === 'idoso-2' ? rotinaInicialMaria : rotinaInicialJoao;
     banco[idosoId][chaveData] = base.map((item, idx) => ({
       ...item,
@@ -103,31 +102,53 @@ export function getAtividadesPorIdosoEData(idosoId = 'idoso-1', dataObj = new Da
   return [...banco[idosoId][chaveData]].sort((a, b) => a.horario.localeCompare(b.horario));
 }
 
-// Atalho compatível com a tela de Rotina do Seu João
 export function getAtividadesPorData(dataObj = new Date()) {
   return getAtividadesPorIdosoEData('idoso-1', dataObj);
 }
 
-// Adiciona uma nova atividade/remédio
-export function adicionarAtividade(idosoId = 'idoso-1', novaAtividade, dataObj = new Date()) {
+// Adiciona uma nova atividade (remédio com N dias ou lembrete em data específica)
+export function adicionarAtividade(idosoId = 'idoso-1', novaAtividade, dataInicio = new Date(), diasDuracao = 1) {
+  const banco = getBancoCompleto();
+  if (!banco[idosoId]) banco[idosoId] = {};
+
+  const totalDias = Math.max(1, parseInt(diasDuracao, 10) || 1);
+  const baseTimestamp = Date.now();
+
+  for (let i = 0; i < totalDias; i++) {
+    const dataAlvo = new Date(dataInicio);
+    dataAlvo.setDate(dataAlvo.getDate() + i);
+    const chaveData = formatarDataChave(dataAlvo);
+
+    if (!banco[idosoId][chaveData]) {
+      banco[idosoId][chaveData] = [];
+    }
+
+    const item = {
+      id: `${baseTimestamp}-${i}`,
+      horario: novaAtividade.horario,
+      titulo: novaAtividade.titulo,
+      detalhe: novaAtividade.detalhe,
+      tipo: novaAtividade.tipo || 'remedio',
+      diasTratamento: totalDias,
+      concluido: false
+    };
+
+    banco[idosoId][chaveData].push(item);
+    banco[idosoId][chaveData].sort((a, b) => a.horario.localeCompare(b.horario));
+  }
+
+  salvarBanco(banco);
+}
+
+// Remove uma atividade de uma data específica
+export function removerAtividade(idosoId = 'idoso-1', id, dataObj = new Date()) {
   const chaveData = formatarDataChave(dataObj);
   const banco = getBancoCompleto();
 
-  if (!banco[idosoId]) banco[idosoId] = {};
-  if (!banco[idosoId][chaveData]) banco[idosoId][chaveData] = [];
-
-  const item = {
-    id: Date.now().toString(),
-    horario: novaAtividade.horario,
-    titulo: novaAtividade.titulo,
-    detalhe: novaAtividade.detalhe,
-    tipo: novaAtividade.tipo || 'remedio',
-    concluido: false
-  };
-
-  banco[idosoId][chaveData].push(item);
-  banco[idosoId][chaveData].sort((a, b) => a.horario.localeCompare(b.horario));
-  salvarBanco(banco);
+  if (banco[idosoId]?.[chaveData]) {
+    banco[idosoId][chaveData] = banco[idosoId][chaveData].filter(item => item.id !== id);
+    salvarBanco(banco);
+  }
 }
 
 // Conclui uma dose
