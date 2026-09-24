@@ -19,7 +19,7 @@ import PainelCuidador from './pages/PainelCuidador';
 export default function App() {
   return (
     <ConfigProvider>
-      <Router>
+      <Router basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
