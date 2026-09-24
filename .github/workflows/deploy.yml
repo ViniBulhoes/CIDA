@@ -2,7 +2,7 @@ name: Deploy do CIDA no GitHub Pages
 
 on:
   push:
-    branches: ['main'] # se sua branch for master, mude para master
+    branches: ['main'] # Se a sua branch principal for master, mude para 'master'
   workflow_dispatch:
 
 permissions:
@@ -28,10 +28,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm install
 
       - name: Build do Vite
         run: npm run build
