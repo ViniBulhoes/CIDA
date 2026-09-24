@@ -2,7 +2,7 @@ name: Deploy do CIDA no GitHub Pages
 
 on:
   push:
-    branches: ['main'] # Se a branch for master, troque para 'master'
+    branches: ['main'] # Se a sua branch for master, troque para 'master'
   workflow_dispatch:
 
 permissions:
@@ -17,9 +17,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: Cida/FrontEnd
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -29,11 +26,27 @@ jobs:
         with:
           node-version: 22
 
-      - name: Instalar dependências
-        run: npm install
+      - name: Descobrir pasta do projeto e compilar
+        run: |
+          echo "Buscando o arquivo package.json no repositório..."
+          PKG_PATH=$(find . -name "package.json" -not -path "*/node_modules/*" | head -n 1)
+          
+          if [ -z "$PKG_PATH" ]; then
+            echo "ERRO: package.json não foi encontrado!"
+            ls -la
+            exit 1
+          fi
 
-      - name: Build do Vite
-        run: npx vite build
+          APP_DIR=$(dirname "$PKG_PATH")
+          echo "Pasta do projeto encontrada em: $APP_DIR"
+          
+          cd "$APP_DIR"
+          npm install
+          npx vite build
+          
+          # Salva o caminho do dist para a próxima etapa
+          mkdir -p $GITHUB_WORKSPACE/_upload
+          cp -r dist/* $GITHUB_WORKSPACE/_upload/
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5
@@ -41,7 +54,7 @@ jobs:
       - name: Upload dos arquivos compilados
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'Cida/FrontEnd/dist'
+          path: '_upload'
 
   deploy:
     environment:
